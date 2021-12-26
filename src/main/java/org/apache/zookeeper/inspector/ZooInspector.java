@@ -44,7 +44,7 @@ public class ZooInspector {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            JFrame frame = new JFrame("ZooInspector");
+            JFrame frame = new JFrame("ZooInspector-N");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             iconResource = new IconResource();
             final ZooInspectorPanel zooInspectorPanel = new ZooInspectorPanel(
@@ -62,9 +62,9 @@ public class ZooInspector {
             frame.setVisible(true);
         } catch (Exception e) {
             LoggerFactory.getLogger().error(
-                    "Error occurred loading ZooInspector", e);
+                    "Error occurred loading ZooInspector-N", e);
             JOptionPane.showMessageDialog(null,
-                    "ZooInspector failed to start: " + e.getMessage(), "Error",
+                    "ZooInspector-N failed to start: " + e.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

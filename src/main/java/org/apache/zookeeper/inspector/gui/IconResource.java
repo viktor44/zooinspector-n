@@ -32,10 +32,8 @@ import org.apache.zookeeper.inspector.logger.LoggerFactory;
  */
 public class IconResource {
 
+	// 24x24
     public static final String ICON_ChangeNodeViewers = "actions/preferences-system";
-    public static final String ICON_TREE_LEAF = "mimetypes/text-x-generic";
-    public static final String ICON_TREE_OPEN = "places/folder-open";
-    public static final String ICON_TREE_CLOSE = "places/folder";
     public static final String ICON_INFORMATION = "status/info";
     public static final String ICON_SAVE = "actions/document-save";
     public static final String ICON_UP = "actions/up";
@@ -50,57 +48,38 @@ public class IconResource {
     // better: actions/help-about, but not in tango
     public static final String ICON_HELP_ABOUT = "status/info";
 
+    // 16x16
+    public static final String ICON_TREE_LEAF = "mimetypes/text-x-generic";
+    public static final String ICON_TREE_OPEN = "places/folder-open";
+    public static final String ICON_TREE_CLOSE = "places/folder";
+
     private static final String DEFAULT_THEME = "Tango";
-    private static final String DEFAULT_SIZE = "24x24";
     private static final String FALLBACK_ICON = "face-surprise";
 
-    // compare http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-    private static final String[] DEFAULT_XDG_DATA_DIRS = new String[]{
-        "/usr/local/share",
-        "/usr/share"
-    };
-
     private String theme = DEFAULT_THEME;
-    private String size = DEFAULT_SIZE;
 
     public URL find(String name) {
         String iconPath = buildIconPath(name);
-        URL iconUrl = findInPaths(iconPath);
-        if(null != iconUrl) return iconUrl;
+        URL iconUrl = getClass().getResource(iconPath);
+        if (null != iconUrl) return iconUrl;
 
-        iconUrl = getClass().getResource(iconPath);
-        if(null != iconUrl) return iconUrl;
-
-        if(!name.equals(FALLBACK_ICON)) return find(FALLBACK_ICON);
+        if (!name.equals(FALLBACK_ICON)) return find(FALLBACK_ICON);
         return null;
     }
 
     public ImageIcon get(String name, String description) {
         URL iconUrl = find(name);
-        if(null==iconUrl) {
+        if (iconUrl == null) {
             ImageIcon icon = new ImageIcon();
             icon.setDescription(description);
             return icon;
-        } else {
+        } 
+        else {
             return new ImageIcon(iconUrl, description);
         }
     }
 
-    private URL findInPaths(String iconPath) {
-        for(String dataDir : DEFAULT_XDG_DATA_DIRS) {
-            File file = new File(dataDir + iconPath);
-            if(file.exists()) {
-                try {
-                    return file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    LoggerFactory.getLogger().warn(e.toString());
-                }
-            }
-        }
-        return null;
-    }
-
     private String buildIconPath(String name) {
-        return "/icons/" + theme + "/" + size + "/" + name + ".png";
+        return "/icons/" + theme + "/" + name + ".png";
     }
 }
