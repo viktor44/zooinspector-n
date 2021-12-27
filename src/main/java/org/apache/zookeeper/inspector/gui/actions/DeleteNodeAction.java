@@ -17,14 +17,16 @@
  */
 package org.apache.zookeeper.inspector.gui.actions;
 
+import java.awt.event.ActionEvent;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
 import org.apache.zookeeper.inspector.gui.ZooInspectorTreeViewer;
 import org.apache.zookeeper.inspector.manager.ZooInspectorManager;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.awt.event.KeyEvent;
 
 public class DeleteNodeAction extends AbstractAction {
 
@@ -40,29 +42,30 @@ public class DeleteNodeAction extends AbstractAction {
         this.zooInspectorManager = zooInspectorManager;
     }
 
-
+    @Override
     public void actionPerformed(ActionEvent e) {
-        final List<String> selectedNodes = treeViewer
-                .getSelectedNodes();
+        final List<String> selectedNodes = treeViewer.getSelectedNodes();
         if (selectedNodes.size() == 0) {
-            JOptionPane.showMessageDialog(parentPanel,
+            JOptionPane.showMessageDialog(
+            		parentPanel,
                     "Please select at least 1 node to be deleted");
-        } else {
+        } 
+        else {
             int answer = JOptionPane.showConfirmDialog(
-                    parentPanel,
-                    "Are you sure you want to delete the selected nodes?"
-                            + "(This action cannot be reverted)",
-                    "Confirm Delete", JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
+			                    parentPanel,
+			                    "Are you sure you want to delete the selected nodes?"
+			                            + "(This action cannot be reverted)",
+			                    "Confirm Delete", 
+			                    JOptionPane.YES_NO_OPTION,
+			                    JOptionPane.WARNING_MESSAGE
+			            );
             if (answer == JOptionPane.YES_OPTION) {
                 SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
 
                     @Override
                     protected Boolean doInBackground() throws Exception {
                         for (String nodePath : selectedNodes) {
-                            zooInspectorManager
-                                    .deleteNode(nodePath);
+                            zooInspectorManager.deleteNode(nodePath);
                         }
                         return true;
                     }
@@ -72,6 +75,7 @@ public class DeleteNodeAction extends AbstractAction {
                         treeViewer.refreshView();
                     }
                 };
+                
                 worker.execute();
             }
         }

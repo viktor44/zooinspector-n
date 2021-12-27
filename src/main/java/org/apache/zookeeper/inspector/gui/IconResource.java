@@ -29,6 +29,8 @@ import org.apache.zookeeper.inspector.logger.LoggerFactory;
 /**
  * @see http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
  * I tried to take icons that are available in the Tango icon set
+ * 
+ * Icon source http://tango.freedesktop.org/releases/
  */
 public class IconResource {
 

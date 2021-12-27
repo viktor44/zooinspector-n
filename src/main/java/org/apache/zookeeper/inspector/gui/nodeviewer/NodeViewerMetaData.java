@@ -86,8 +86,7 @@ public class NodeViewerMetaData extends ZooInspectorNodeViewer {
 
                 @Override
                 protected Map<String, String> doInBackground() throws Exception {
-                    return NodeViewerMetaData.this.zooInspectorManager
-                            .getNodeMeta(NodeViewerMetaData.this.selectedNode);
+                    return NodeViewerMetaData.this.zooInspectorManager.getNodeMeta(NodeViewerMetaData.this.selectedNode);
                 }
 
                 @Override

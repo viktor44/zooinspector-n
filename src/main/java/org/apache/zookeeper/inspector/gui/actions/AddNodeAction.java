@@ -17,15 +17,16 @@
  */
 package org.apache.zookeeper.inspector.gui.actions;
 
-import org.apache.zookeeper.inspector.gui.ZooInspectorPanel;
+import java.awt.event.ActionEvent;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
 import org.apache.zookeeper.inspector.gui.ZooInspectorTreeViewer;
 import org.apache.zookeeper.inspector.manager.ZooInspectorManager;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.awt.event.KeyEvent;
 
 public class AddNodeAction extends AbstractAction {
 
@@ -41,22 +42,22 @@ public class AddNodeAction extends AbstractAction {
         this.zooInspectorManager = zooInspectorManager;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-        final List<String> selectedNodes = treeViewer
-                .getSelectedNodes();
+        final List<String> selectedNodes = treeViewer.getSelectedNodes();
         if (selectedNodes.size() == 1) {
             final String nodeName = JOptionPane.showInputDialog(
-                    panel,
-                    "Please Enter a name for the new node",
-                    "Create Node", JOptionPane.INFORMATION_MESSAGE);
+						                    panel,
+						                    "Please Enter a name for the new node",
+						                    "Create Node", 
+						                    JOptionPane.INFORMATION_MESSAGE
+            						);
             if (nodeName != null && nodeName.length() > 0) {
                 SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
 
                     @Override
                     protected Boolean doInBackground() throws Exception {
-                        return zooInspectorManager
-                                .createNode(selectedNodes.get(0),
-                                        nodeName);
+                        return zooInspectorManager.createNode(selectedNodes.get(0), nodeName);
                     }
 
                     @Override
@@ -66,9 +67,9 @@ public class AddNodeAction extends AbstractAction {
                 };
                 worker.execute();
             }
-        } else {
-            JOptionPane.showMessageDialog(panel,
-                    "Please select 1 parent node for the new node.");
+        } 
+        else {
+            JOptionPane.showMessageDialog(panel, "Please select 1 parent node for the new node.");
         }
     }
 }

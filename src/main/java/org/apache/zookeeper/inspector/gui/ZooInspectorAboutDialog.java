@@ -24,12 +24,15 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URL;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 
+import org.apache.zookeeper.inspector.ZooInspector;
 import org.apache.zookeeper.inspector.logger.LoggerFactory;
 
 /**
@@ -43,30 +46,32 @@ public class ZooInspectorAboutDialog extends JDialog {
     public ZooInspectorAboutDialog(Frame frame, IconResource iconResource) {
         super(frame);
         this.setLayout(new BorderLayout());
-        this.setIconImage(iconResource.get(IconResource.ICON_INFORMATION, "About ZooInspector").getImage());
-        this.setTitle("About ZooInspector");
+        this.setIconImage(iconResource.get(IconResource.ICON_INFORMATION, "About " + ZooInspector.APP_NAME).getImage());
+        this.setTitle("About " + ZooInspector.APP_NAME);
         this.setModal(true);
         this.setAlwaysOnTop(true);
         this.setResizable(false);
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JEditorPane aboutPane = new JEditorPane();
         aboutPane.setEditable(false);
         aboutPane.setOpaque(false);
-        java.net.URL aboutURL = ZooInspectorAboutDialog.class
-                .getResource("about.html");
+        URL aboutURL = ZooInspectorAboutDialog.class.getResource("about.html");
         try {
             aboutPane.setPage(aboutURL);
-        } catch (IOException e) {
-            LoggerFactory.getLogger().error(
-                    "Error loading about.html, file may be corrupt", e);
+        } 
+        catch (IOException e) {
+            LoggerFactory.getLogger().error("Error loading about.html, file may be corrupt", e);
         }
         panel.add(aboutPane, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(600, 200));
         JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         JButton okButton = new JButton("OK");
         okButton.addActionListener(new ActionListener() {
+        	@Override
             public void actionPerformed(ActionEvent e) {
                 ZooInspectorAboutDialog.this.dispose();
             }
@@ -75,5 +80,6 @@ public class ZooInspectorAboutDialog extends JDialog {
         this.add(panel, BorderLayout.CENTER);
         this.add(buttonsPanel, BorderLayout.SOUTH);
         this.pack();
+        this.setLocationRelativeTo(getParent());
     }
 }

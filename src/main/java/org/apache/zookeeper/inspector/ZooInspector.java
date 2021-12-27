@@ -34,6 +34,8 @@ import org.apache.zookeeper.inspector.manager.ZooInspectorManagerImpl;
  */
 public class ZooInspector {
 	
+	public static final String APP_NAME = "ZooInspector-N";
+	
 	public static IconResource iconResource;
 	
     /**
@@ -44,7 +46,7 @@ public class ZooInspector {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            JFrame frame = new JFrame("ZooInspector-N");
+            JFrame frame = new JFrame(APP_NAME);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             iconResource = new IconResource();
             final ZooInspectorPanel zooInspectorPanel = new ZooInspectorPanel(
@@ -56,15 +58,19 @@ public class ZooInspector {
                     zooInspectorPanel.disconnect(true);
                 }
             });
-
+            frame.setLocationByPlatform(true);
             frame.setContentPane(zooInspectorPanel);
             frame.setSize(1024, 768);
             frame.setVisible(true);
-        } catch (Exception e) {
-            LoggerFactory.getLogger().error(
-                    "Error occurred loading ZooInspector-N", e);
-            JOptionPane.showMessageDialog(null,
-                    "ZooInspector-N failed to start: " + e.getMessage(), "Error",
+            
+            JOptionPane.setRootFrame(frame);
+        } 
+        catch (Exception e) {
+            LoggerFactory.getLogger().error("Error occurred loading " + APP_NAME, e);
+            JOptionPane.showMessageDialog(
+            		null,
+            		APP_NAME + " failed to start: " + e.getMessage(), 
+            		"Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

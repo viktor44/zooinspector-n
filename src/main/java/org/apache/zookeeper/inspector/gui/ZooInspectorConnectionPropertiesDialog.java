@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -76,8 +77,9 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
         this.setTitle("Connection Settings");
         this.setModal(true);
         this.setAlwaysOnTop(true);
-        this.setResizable(false);
+        this.setResizable(true);
         final JPanel options = new JPanel();
+        options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         final JFileChooser fileChooser = new JFileChooser();
         options.setLayout(new GridBagLayout());
         int i = 0;
@@ -130,10 +132,10 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
                 c2.ipady = 0;
                 options.add(text, c2);
                 components.put(entry.getKey(), text);
-            } else {
+            } 
+            else {
                 List<String> list = entry.getValue();
-                JComboBox combo = new JComboBox(list.toArray(new String[list
-                        .size()]));
+                JComboBox<String> combo = new JComboBox<>(list.toArray(new String[list.size()]));
                 combo.setSelectedItem(list.get(0));
                 GridBagConstraints c2 = new GridBagConstraints();
                 c2.gridx = 2;
@@ -154,13 +156,13 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
         }
         loadConnectionProps(lastConnectionProps);
         JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         buttonsPanel.setLayout(new GridBagLayout());
         JButton loadPropsFileButton = new JButton("Load from file");
         loadPropsFileButton.addActionListener(new ActionListener() {
-
+        	@Override
             public void actionPerformed(ActionEvent e) {
-                int result = fileChooser
-                        .showOpenDialog(ZooInspectorConnectionPropertiesDialog.this);
+                int result = fileChooser.showOpenDialog(ZooInspectorConnectionPropertiesDialog.this);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File propsFilePath = fileChooser.getSelectedFile();
                     Properties props = new Properties();
@@ -169,20 +171,20 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
                         try {
                             props.load(reader);
                             loadConnectionProps(props);
-                        } finally {
+                        } 
+                        finally {
                             reader.close();
                         }
-                    } catch (IOException ex) {
-                        LoggerFactory
-                                .getLogger()
-                                .error(
-                                        "An Error occurred loading connection properties from file",
-                                        ex);
-                        JOptionPane
-                                .showMessageDialog(
-                                        ZooInspectorConnectionPropertiesDialog.this,
-                                        "An Error occurred loading connection properties from file",
-                                        "Error", JOptionPane.ERROR_MESSAGE);
+                    } 
+                    catch (IOException ex) {
+                        LoggerFactory.getLogger().error(
+                                "An Error occurred loading connection properties from file",
+                                ex);
+                        JOptionPane.showMessageDialog(
+                                ZooInspectorConnectionPropertiesDialog.this,
+                                "An Error occurred loading connection properties from file",
+                                "Error", 
+                                JOptionPane.ERROR_MESSAGE);
                     }
                     options.revalidate();
                     options.repaint();
@@ -205,24 +207,22 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
         buttonsPanel.add(loadPropsFileButton, c3);
         JButton saveDefaultPropsFileButton = new JButton("Set As Default");
         saveDefaultPropsFileButton.addActionListener(new ActionListener() {
-
+        	@Override
             public void actionPerformed(ActionEvent e) {
 
                 Properties connectionProps = getConnectionProps();
                 try {
-                    zooInspectorPanel
-                            .setdefaultConnectionProps(connectionProps);
-                } catch (IOException ex) {
-                    LoggerFactory
-                            .getLogger()
-                            .error(
-                                    "An Error occurred saving the default connection properties file",
-                                    ex);
-                    JOptionPane
-                            .showMessageDialog(
-                                    ZooInspectorConnectionPropertiesDialog.this,
-                                    "An Error occurred saving the default connection properties file",
-                                    "Error", JOptionPane.ERROR_MESSAGE);
+                    zooInspectorPanel.setdefaultConnectionProps(connectionProps);
+                } 
+                catch (IOException ex) {
+                    LoggerFactory.getLogger().error(
+                            "An Error occurred saving the default connection properties file",
+                            ex);
+                    JOptionPane.showMessageDialog(
+                            ZooInspectorConnectionPropertiesDialog.this,
+                            "An Error occurred saving the default connection properties file",
+                            "Error", 
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -241,7 +241,7 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
         buttonsPanel.add(saveDefaultPropsFileButton, c6);
         JButton okButton = new JButton("OK");
         okButton.addActionListener(new ActionListener() {
-
+        	@Override
             public void actionPerformed(ActionEvent e) {
                 ZooInspectorConnectionPropertiesDialog.this.dispose();
                 Properties connectionProps = getConnectionProps();
@@ -263,7 +263,7 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
         buttonsPanel.add(okButton, c4);
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new ActionListener() {
-
+        	@Override
             public void actionPerformed(ActionEvent e) {
                 ZooInspectorConnectionPropertiesDialog.this.dispose();
             }
@@ -284,6 +284,7 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
         this.add(options, BorderLayout.CENTER);
         this.add(buttonsPanel, BorderLayout.SOUTH);
         this.pack();
+        this.setLocationRelativeTo(getParent());
     }
 
     private void loadConnectionProps(Properties props) {
@@ -295,8 +296,9 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
                     String value = props.getProperty(propsKey);
                     if (component instanceof JTextField) {
                         ((JTextField) component).setText(value);
-                    } else if (component instanceof JComboBox) {
-                        ((JComboBox) component).setSelectedItem(value);
+                    } 
+                    else if (component instanceof JComboBox) {
+                        ((JComboBox<?>) component).setSelectedItem(value);
                     }
                 }
             }
@@ -310,8 +312,9 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
             JComponent component = entry.getValue();
             if (component instanceof JTextField) {
                 value = ((JTextField) component).getText();
-            } else if (component instanceof JComboBox) {
-                value = ((JComboBox) component).getSelectedItem().toString();
+            } 
+            else if (component instanceof JComboBox) {
+                value = ((JComboBox<?>) component).getSelectedItem().toString();
             }
             connectionProps.put(entry.getKey(), value);
         }
