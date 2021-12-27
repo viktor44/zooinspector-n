@@ -1,1 +1,3 @@
-# zooinspector-n
+# ZooInspector-N
+
+ZooInspector with some improvements
