@@ -39,6 +39,7 @@ import org.apache.zookeeper.inspector.gui.actions.DeleteNodeAction;
 import org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer;
 import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorManager;
+import org.apache.zookeeper.inspector.manager.ZookeeperProperties;
 
 /**
  * The parent {@link JPanel} for the whole application
@@ -90,7 +91,7 @@ public class ZooInspectorPanel extends JPanel implements
 			            public void actionPerformed(ActionEvent e) {
 			                ZooInspectorConnectionPropertiesDialog zicpd = new ZooInspectorConnectionPropertiesDialog(
 			                        zooInspectorManager.getLastConnectionProps(),
-			                        zooInspectorManager.getConnectionPropertiesTemplate(),
+			                        zooInspectorManager.getDefaultConnectionProperties(),
 			                        ZooInspectorPanel.this);
 			                zicpd.setVisible(true);
 			            }
@@ -147,8 +148,7 @@ public class ZooInspectorPanel extends JPanel implements
 		        }
         );
         JScrollPane treeScroller = new JScrollPane(treeViewer);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                treeScroller, nodeViewersPanel);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroller, nodeViewersPanel);
         splitPane.setResizeWeight(0.25);
         this.add(splitPane, BorderLayout.CENTER);
         this.add(toolbar.getJToolBar(), BorderLayout.NORTH);
@@ -159,7 +159,7 @@ public class ZooInspectorPanel extends JPanel implements
      *            the {@link Properties} for connecting to the zookeeper
      *            instance
      */
-    public void connect(final Properties connectionProps) {
+    public void connect(final ZookeeperProperties connectionProps) {
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
 
             @Override
@@ -174,23 +174,21 @@ public class ZooInspectorPanel extends JPanel implements
                     if (get()) {
                         treeViewer.refreshView();
                         toolbar.toggleButtons(true);
-                    } else {
-                        JOptionPane.showMessageDialog(ZooInspectorPanel.this,
-                                "Unable to connect to zookeeper", "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                    } 
+                    else {
+                        JOptionPane.showMessageDialog(
+                        		ZooInspectorPanel.this,
+                                "Unable to connect to zookeeper", 
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
                     }
-                } catch (InterruptedException e) {
-                    LoggerFactory
-                            .getLogger()
-                            .error(
-                                    "Error occurred while connecting to ZooKeeper server",
-                                    e);
-                } catch (ExecutionException e) {
-                    LoggerFactory
-                            .getLogger()
-                            .error(
-                                    "Error occurred while connecting to ZooKeeper server",
-                                    e);
+                } 
+                catch (InterruptedException | ExecutionException e) {
+                    LoggerFactory.getLogger().error(
+                            "Error occurred while connecting to ZooKeeper server",
+                            e
+                    );
                 }
             }
 
@@ -226,16 +224,11 @@ public class ZooInspectorPanel extends JPanel implements
                         toolbar.toggleButtons(false);
                     }
                 } 
-                catch (InterruptedException e) {
+                catch (InterruptedException | ExecutionException e) {
                     LoggerFactory.getLogger().error(
                             "Error occurred while disconnecting from ZooKeeper server",
                             e);
                 } 
-                catch (ExecutionException e) {
-                    LoggerFactory.getLogger().error(
-                            "Error occurred while disconnecting from ZooKeeper server",
-                            e);
-                }
             }
 
         };
@@ -269,7 +262,7 @@ public class ZooInspectorPanel extends JPanel implements
      * @param connectionProps
      * @throws IOException
      */
-    public void setdefaultConnectionProps(Properties connectionProps) throws IOException {
+    public void setDefaultConnectionProps(ZookeeperProperties connectionProps) throws IOException {
         this.zooInspectorManager.saveDefaultConnectionFile(connectionProps);
     }
 }

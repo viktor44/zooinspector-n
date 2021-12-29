@@ -94,7 +94,6 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         this.setIconImage(iconResource.get(IconResource.ICON_ChangeNodeViewers, "").getImage());
         this.setTitle("Node Viewers");
         this.setModal(true);
-        this.setAlwaysOnTop(true);
         this.setResizable(true);
         final JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));

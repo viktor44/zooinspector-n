@@ -42,17 +42,21 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
+import org.apache.zookeeper.inspector.ZooInspector;
 import org.apache.zookeeper.inspector.encryption.BasicDataEncryptionManager;
 import org.apache.zookeeper.inspector.encryption.DataEncryptionManager;
 import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.retry.ZooKeeperRetry;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A default implementation of {@link ZooInspectorManager} for connecting to
@@ -75,39 +79,16 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
     private static final String ACL_ID = "Id";
     private static final String SESSION_STATE = "Session State";
     private static final String SESSION_ID = "Session ID";
-    /**
-     * The key used for the connect string in the connection properties file
-     */
-    public static final String CONNECT_STRING = "hosts";
-    /**
-     * The key used for the session timeout in the connection properties file
-     */
-    public static final String SESSION_TIMEOUT = "timeout";
-    /**
-     * The key used for the data encryption manager in the connection properties
-     * file
-     */
-    public static final String DATA_ENCRYPTION_MANAGER = "encryptionManager";
-    /**
-     * The key used for the authentication scheme in the connection properties file
-     */
-    public static final String AUTH_SCHEME_KEY = "authScheme";
-    /**
-     * The key used for the authentication data in the connection properties file
-     */
-    public static final String AUTH_DATA_KEY = "authData";
 
     private static final String DEFAULT_ENCRYPTION_MANAGER = BasicDataEncryptionManager.class.getName();
-    private static final int DEFAULT_TIMEOUT = 5000;
+    private static final int DEFAULT_TIMEOUT = 10_000;
     private static final String DEFAULT_HOSTS = "localhost:2181";
     private static final String DEFAULT_AUTH_SCHEME = "";
     private static final String DEFAULT_AUTH_VALUE = "";
 
     private static final String homeDir = System.getProperty("user.home");
-    private static final File defaultNodeViewersFile =
-        new File(homeDir + "/.zooinspector/defaultNodeViewers.cfg");
-    private static final File defaultConnectionFile =
-        new File(homeDir + "/.zooinspector/defaultConnectionSettings.cfg");
+    private static final File defaultNodeViewersFile = new File(homeDir + "/.zooinspector/defaultNodeViewers.cfg");
+    private static final File defaultConnectionFile = new File(homeDir + "/.zooinspector/defaultConnectionSettings.cfg");
 
     private DataEncryptionManager encryptionManager;
     private String connectString;
@@ -115,12 +96,13 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
     private ZooKeeper zooKeeper;
     private final Map<String, NodeWatcher> watchers = new HashMap<String, NodeWatcher>();
     protected boolean connected = true;
-    private Properties lastConnectionProps;
-    private String defaultEncryptionManager;
-    private String defaultTimeout;
-    private String defaultHosts;
-    private String defaultAuthScheme;
-    private String defaultAuthValue;
+    private ZookeeperProperties lastConnectionProps;
+	private String defaultEncryptionManager;
+    private ZookeeperProperties defaultConnectionProps;
+//    private int defaultTimeout;
+//    private String defaultHosts;
+//    private String defaultAuthScheme;
+//    private String defaultAuthValue;
     private NodesCache nodesCache;
 
     /**
@@ -129,7 +111,7 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
      * 
      */
     public ZooInspectorManagerImpl() throws IOException {
-        loadDefaultConnectionFile();
+        defaultConnectionProps = loadDefaultConnectionFile();
     }
 
     /*
@@ -140,43 +122,30 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
      * .util.Properties)
      */
     @Override
-	public boolean connect(Properties connectionProps) {
+	public boolean connect(ZookeeperProperties connectionProps) {
         try {
             if (this.zooKeeper == null) {
-                String connectString = connectionProps
-                        .getProperty(CONNECT_STRING);
-                String sessionTimeout = connectionProps
-                        .getProperty(SESSION_TIMEOUT);
-                String encryptionManager = connectionProps
-                        .getProperty(DATA_ENCRYPTION_MANAGER);
-                String authScheme = connectionProps
-                        .getProperty(AUTH_SCHEME_KEY);
-                String authData = connectionProps
-                        .getProperty(AUTH_DATA_KEY);
-
-                if (connectString == null || sessionTimeout == null) {
+                if (connectionProps.getConnectionString() == null || connectionProps.getSessionTimeoutMs() <= 0) {
                     throw new IllegalArgumentException(
                             "Both connect string and session timeout are required.");
                 }
-                if (encryptionManager == null) {
+                if (connectionProps.getEncryptionManager() == null) {
                     this.encryptionManager = new BasicDataEncryptionManager();
-                } else {
-                    Class<?> clazz = Class.forName(encryptionManager);
+                } 
+                else {
+                    Class<?> clazz = Class.forName(connectionProps.getEncryptionManager());
 
-                    if (Arrays.asList(clazz.getInterfaces()).contains(
-                            DataEncryptionManager.class)) {
-                        this.encryptionManager = (DataEncryptionManager) Class
-                                .forName(encryptionManager).newInstance();
-                    } else {
-                        throw new IllegalArgumentException(
-                                "Data encryption manager must implement DataEncryptionManager interface");
+                    if (Arrays.asList(clazz.getInterfaces()).contains(DataEncryptionManager.class)) {
+                        this.encryptionManager = (DataEncryptionManager) clazz.newInstance();
+                    } 
+                    else {
+                        throw new IllegalArgumentException("Data encryption manager must implement DataEncryptionManager interface");
                     }
                 }
-                this.connectString = connectString;
-                this.sessionTimeout = Integer.valueOf(sessionTimeout);
+                this.connectString = connectionProps.getConnectionString();
+                this.sessionTimeout = connectionProps.getSessionTimeoutMs();
                 this.zooKeeper = new ZooKeeperRetry(
-                		connectString, 
-                		Integer.valueOf(sessionTimeout), 
+                		connectionProps, 
                 		new Watcher() {
 			                    @Override
 			                    public void process(WatchedEvent event) {
@@ -186,10 +155,6 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
 			                    }
 		                }
                 );
-                if (authData != null && authData.length() > 0){
-                    this.zooKeeper.addAuthInfo(authScheme, authData.getBytes());
-                }
-                ((ZooKeeperRetry) this.zooKeeper).setRetryLimit(10);
                 connected = ((ZooKeeperRetry) this.zooKeeper).testConnection();
             }
         } 
@@ -199,7 +164,8 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         }
         if (!connected){
         	disconnect();
-        } else {
+        } 
+        else {
             this.nodesCache = new NodesCache(zooKeeper);
         }
         return connected;
@@ -485,30 +451,30 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.apache.zookeeper.inspector.manager.ZooInspectorReadOnlyManager#
-     * getSessionMeta()
-     */
-    @Override
-    public Map<String, String> getSessionMeta() {
-        Map<String, String> sessionMeta = new LinkedHashMap<String, String>();
-        try {
-            if (zooKeeper != null) {
-
-                sessionMeta.put(SESSION_ID, String.valueOf(zooKeeper.getSessionId()));
-                sessionMeta.put(SESSION_STATE, String.valueOf(zooKeeper.getState().toString()));
-                sessionMeta.put(CONNECT_STRING, this.connectString);
-                sessionMeta.put(SESSION_TIMEOUT, String.valueOf(this.sessionTimeout));
-            }
-        } 
-        catch (Exception e) {
-            LoggerFactory.getLogger().error(
-                    "Error occurred retrieving session meta data.", e);
-        }
-        return sessionMeta;
-    }
+//    /*
+//     * (non-Javadoc)
+//     * 
+//     * @seeorg.apache.zookeeper.inspector.manager.ZooInspectorReadOnlyManager#
+//     * getSessionMeta()
+//     */
+//    @Override
+//    public Map<String, String> getSessionMeta() {
+//        Map<String, String> sessionMeta = new LinkedHashMap<String, String>();
+//        try {
+//            if (zooKeeper != null) {
+//
+//                sessionMeta.put(SESSION_ID, String.valueOf(zooKeeper.getSessionId()));
+//                sessionMeta.put(SESSION_STATE, String.valueOf(zooKeeper.getState().toString()));
+//                sessionMeta.put(CONNECT_STRING, this.connectString);
+//                sessionMeta.put(SESSION_TIMEOUT, String.valueOf(this.sessionTimeout));
+//            }
+//        } 
+//        catch (Exception e) {
+//            LoggerFactory.getLogger().error(
+//                    "Error occurred retrieving session meta data.", e);
+//        }
+//        return sessionMeta;
+//    }
 
     /*
      * (non-Javadoc)
@@ -596,27 +562,23 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.apache.zookeeper.inspector.manager.ZooInspectorManager#
-     * getConnectionPropertiesTemplate()
-     */
     @Override
-    public Pair<Map<String, List<String>>, Map<String, String>> getConnectionPropertiesTemplate() {
-        Map<String, List<String>> template = new LinkedHashMap<String, List<String>>();
-        template.put(CONNECT_STRING, Arrays.asList( defaultHosts ));
-        template.put(SESSION_TIMEOUT, Arrays.asList( defaultTimeout ));
-        template.put(DATA_ENCRYPTION_MANAGER, Arrays.asList( defaultEncryptionManager ));
-        template.put(AUTH_SCHEME_KEY, Arrays.asList( defaultAuthScheme ));
-        template.put(AUTH_DATA_KEY, Arrays.asList( defaultAuthValue ));
-        Map<String, String> labels = new LinkedHashMap<String, String>();
-        labels.put(CONNECT_STRING, "Connect String");
-        labels.put(SESSION_TIMEOUT, "Session Timeout");
-        labels.put(DATA_ENCRYPTION_MANAGER, "Data Encryption Manager");
-        labels.put(AUTH_SCHEME_KEY, "Authentication Scheme");
-        labels.put(AUTH_DATA_KEY, "Authentication Data");
-        return new Pair<Map<String, List<String>>, Map<String, String>>(template, labels);
+    public ZookeeperProperties getDefaultConnectionProperties() {
+    	return defaultConnectionProps;
+    	
+//        Map<String, List<String>> template = new LinkedHashMap<String, List<String>>();
+//        template.put(CONNECT_STRING, Arrays.asList( defaultHosts ));
+//        template.put(SESSION_TIMEOUT, Arrays.asList( defaultTimeout ));
+//        template.put(DATA_ENCRYPTION_MANAGER, Arrays.asList( defaultEncryptionManager ));
+//        template.put(AUTH_SCHEME_KEY, Arrays.asList( defaultAuthScheme ));
+//        template.put(AUTH_DATA_KEY, Arrays.asList( defaultAuthValue ));
+//        Map<String, String> labels = new LinkedHashMap<String, String>();
+//        labels.put(CONNECT_STRING, "Connect String");
+//        labels.put(SESSION_TIMEOUT, "Session Timeout");
+//        labels.put(DATA_ENCRYPTION_MANAGER, "Data Encryption Manager");
+//        labels.put(AUTH_SCHEME_KEY, "Authentication Scheme");
+//        labels.put(AUTH_DATA_KEY, "Authentication Data");
+//        return new Pair<Map<String, List<String>>, Map<String, String>>(template, labels);
     }
 
     /*
@@ -763,42 +725,32 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         return result;
     }
 
-    private void loadDefaultConnectionFile() throws IOException {
-        Properties props = new Properties();
+    private ZookeeperProperties loadDefaultConnectionFile() throws IOException {
+    	ZookeeperProperties props = new ZookeeperProperties();
 
+    	props.setConnectionString(DEFAULT_HOSTS);
+    	props.setSessionTimeoutMs(DEFAULT_TIMEOUT);
+    	props.setEncryptionManager(DEFAULT_ENCRYPTION_MANAGER);
+    	props.setAuthScheme(DEFAULT_AUTH_SCHEME);
+    	props.setAuthData(DEFAULT_AUTH_VALUE);
+    	
         try(BufferedReader reader = getReaderForFile(defaultConnectionFile)) {
             //If reader is null, it's OK.  Default values will get set below.
             if(reader != null) {
                 props.load(reader);
             }
         }
-
-        defaultEncryptionManager = props.getProperty(DATA_ENCRYPTION_MANAGER) == null ?
-            DEFAULT_ENCRYPTION_MANAGER : props.getProperty(DATA_ENCRYPTION_MANAGER);
-        defaultTimeout = props.getProperty(SESSION_TIMEOUT) == null ?
-            Integer.toString(DEFAULT_TIMEOUT) : props.getProperty(SESSION_TIMEOUT);
-        defaultHosts = props.getProperty(CONNECT_STRING) == null ?
-            DEFAULT_HOSTS : props.getProperty(CONNECT_STRING);
-        defaultAuthScheme = props.getProperty(AUTH_SCHEME_KEY) == null ?
-            DEFAULT_AUTH_SCHEME : props.getProperty(AUTH_SCHEME_KEY);
-        defaultAuthValue = props.getProperty(AUTH_DATA_KEY) == null ?
-            DEFAULT_AUTH_VALUE : props.getProperty(AUTH_DATA_KEY);
+        
+        return props;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.apache.zookeeper.inspector.manager.ZooInspectorManager#
-     * saveDefaultConnectionFile(java.util.Properties)
-     */
     @Override
-    public void saveDefaultConnectionFile(Properties props) throws IOException {
+    public void saveDefaultConnectionFile(ZookeeperProperties props) throws IOException {
         File defaultDir = defaultConnectionFile.getParentFile();
         if (!defaultDir.exists()) {
             if (!defaultDir.mkdirs()) {
                 throw new IOException(
-                        "Failed to create configuration directory: "
-                                + defaultDir.getAbsolutePath());
+                        "Failed to create configuration directory: " + defaultDir.getAbsolutePath());
             }
         }
         if (!defaultConnectionFile.exists()) {
@@ -810,7 +762,7 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         }
         FileWriter writer = new FileWriter(defaultConnectionFile);
         try {
-            props.store(writer, "Default connection for ZooInspector");
+            props.store(writer, "Default connection for " + ZooInspector.APP_NAME);
         } 
         finally {
             writer.close();
@@ -824,8 +776,7 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
      * saveNodeViewersFile(java.io.File, java.util.List)
      */
     @Override
-    public void saveNodeViewersFile(File selectedFile,
-            List<String> nodeViewersClassNames) throws IOException {
+    public void saveNodeViewersFile(File selectedFile, List<String> nodeViewersClassNames) throws IOException {
         if (!selectedFile.exists()) {
             if (!selectedFile.createNewFile()) {
                 throw new IOException(
@@ -881,28 +832,6 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         return defaultNodeViewers;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.apache.zookeeper.inspector.manager.ZooInspectorManager#
-     * getLastConnectionProps()
-     */
-    @Override
-    public Properties getLastConnectionProps() {
-        return this.lastConnectionProps;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @seeorg.apache.zookeeper.inspector.manager.ZooInspectorManager#
-     * setLastConnectionProps(java.util.Properties)
-     */
-    @Override
-    public void setLastConnectionProps(Properties connectionProps) {
-        this.lastConnectionProps = connectionProps;
-    }
-
     private static BufferedReader getReaderForFile(File file) {
         //check the filesystem first
         if (file.exists()) {
@@ -924,4 +853,14 @@ public class ZooInspectorManagerImpl implements ZooInspectorManager {
         //couldn't find the file anywhere
         return null;
     }
+
+    @Override
+    public ZookeeperProperties getLastConnectionProps() {
+		return lastConnectionProps;
+	}
+
+    @Override
+	public void setLastConnectionProps(ZookeeperProperties lastConnectionProps) {
+		this.lastConnectionProps = lastConnectionProps;
+	}
 }

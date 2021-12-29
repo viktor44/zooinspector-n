@@ -19,6 +19,7 @@ package org.apache.zookeeper.inspector.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,7 +35,9 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -42,10 +45,13 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.Pair;
+import org.apache.zookeeper.inspector.manager.ZookeeperProperties;
 
 /**
  * The connection properties dialog. This is used to determine the settings for
@@ -53,271 +59,274 @@ import org.apache.zookeeper.inspector.manager.Pair;
  */
 public class ZooInspectorConnectionPropertiesDialog extends JDialog {
 
-    private final Map<String, JComponent> components;
+	private JTextField connectStringText;
+	private JTextField sessionTimeoutText;
+	private JTextField encriptionManagerText;
+	private JTextField authSchemeText;
+	private JTextField authDataText;
+	private JCheckBox sslCheck;
+	private JTextField truststoreLocationText;
+	private JPasswordField truststorePasswordText;
+	private JTextField keystoreLocationText;
+	private JPasswordField keystorePasswordText;
 
-    /**
-     * @param lastConnectionProps
-     *            - the last connection properties used. if this is the first
-     *            conneciton since starting the applications this will be the
-     *            default settings
-     * @param connectionPropertiesTemplateAndLabels
-     *            - the connection properties and labels to show in this dialog
-     * @param zooInspectorPanel
-     *            - the {@link ZooInspectorPanel} linked to this dialog
-     */
-    public ZooInspectorConnectionPropertiesDialog(
-            Properties lastConnectionProps,
-            Pair<Map<String, List<String>>, Map<String, String>> connectionPropertiesTemplateAndLabels,
-            final ZooInspectorPanel zooInspectorPanel) {
-        final Map<String, List<String>> connectionPropertiesTemplate = connectionPropertiesTemplateAndLabels
-                .getKey();
-        final Map<String, String> connectionPropertiesLabels = connectionPropertiesTemplateAndLabels
-                .getValue();
-        this.setLayout(new BorderLayout());
-        this.setTitle("Connection Settings");
-        this.setModal(true);
-        this.setAlwaysOnTop(true);
-        this.setResizable(true);
-        final JPanel options = new JPanel();
-        options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        final JFileChooser fileChooser = new JFileChooser();
-        options.setLayout(new GridBagLayout());
-        int i = 0;
-        components = new HashMap<String, JComponent>();
-        for (Entry<String, List<String>> entry : connectionPropertiesTemplate.entrySet()) {
-            int rowPos = 2 * i + 1;
-            JLabel label = new JLabel(connectionPropertiesLabels.get(entry.getKey()));
-            GridBagConstraints c1 = new GridBagConstraints();
-            c1.gridx = 0;
-            c1.gridy = rowPos;
-            c1.gridwidth = 1;
-            c1.gridheight = 1;
-            c1.weightx = 0;
-            c1.weighty = 0;
-            c1.anchor = GridBagConstraints.WEST;
-            c1.fill = GridBagConstraints.HORIZONTAL;
-            c1.insets = new Insets(5, 5, 5, 5);
-            c1.ipadx = 0;
-            c1.ipady = 0;
-            options.add(label, c1);
-            if (entry.getValue().size() == 0) {
-                JTextField text = new JTextField();
-                GridBagConstraints c2 = new GridBagConstraints();
-                c2.gridx = 2;
-                c2.gridy = rowPos;
-                c2.gridwidth = 1;
-                c2.gridheight = 1;
-                c2.weightx = 1;
-                c2.weighty = 0;
-                c2.anchor = GridBagConstraints.WEST;
-                c2.fill = GridBagConstraints.HORIZONTAL;
-                c2.insets = new Insets(5, 5, 5, 5);
-                c2.ipadx = 0;
-                c2.ipady = 0;
-                options.add(text, c2);
-                components.put(entry.getKey(), text);
-            } else if (entry.getValue().size() == 1) {
-                JTextField text = new JTextField(entry.getValue().get(0));
-                GridBagConstraints c2 = new GridBagConstraints();
-                c2.gridx = 2;
-                c2.gridy = rowPos;
-                c2.gridwidth = 1;
-                c2.gridheight = 1;
-                c2.weightx = 1;
-                c2.weighty = 0;
-                c2.anchor = GridBagConstraints.WEST;
-                c2.fill = GridBagConstraints.HORIZONTAL;
-                c2.insets = new Insets(5, 5, 5, 5);
-                c2.ipadx = 0;
-                c2.ipady = 0;
-                options.add(text, c2);
-                components.put(entry.getKey(), text);
-            } 
-            else {
-                List<String> list = entry.getValue();
-                JComboBox<String> combo = new JComboBox<>(list.toArray(new String[list.size()]));
-                combo.setSelectedItem(list.get(0));
-                GridBagConstraints c2 = new GridBagConstraints();
-                c2.gridx = 2;
-                c2.gridy = rowPos;
-                c2.gridwidth = 1;
-                c2.gridheight = 1;
-                c2.weightx = 1;
-                c2.weighty = 0;
-                c2.anchor = GridBagConstraints.WEST;
-                c2.fill = GridBagConstraints.HORIZONTAL;
-                c2.insets = new Insets(5, 5, 5, 5);
-                c2.ipadx = 0;
-                c2.ipady = 0;
-                options.add(combo, c2);
-                components.put(entry.getKey(), combo);
-            }
-            i++;
-        }
-        loadConnectionProps(lastConnectionProps);
-        JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-        buttonsPanel.setLayout(new GridBagLayout());
-        JButton loadPropsFileButton = new JButton("Load from file");
-        loadPropsFileButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent e) {
-                int result = fileChooser.showOpenDialog(ZooInspectorConnectionPropertiesDialog.this);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File propsFilePath = fileChooser.getSelectedFile();
-                    Properties props = new Properties();
-                    try {
-                        FileReader reader = new FileReader(propsFilePath);
-                        try {
-                            props.load(reader);
-                            loadConnectionProps(props);
-                        } 
-                        finally {
-                            reader.close();
-                        }
-                    } 
-                    catch (IOException ex) {
-                        LoggerFactory.getLogger().error(
-                                "An Error occurred loading connection properties from file",
-                                ex);
-                        JOptionPane.showMessageDialog(
-                                ZooInspectorConnectionPropertiesDialog.this,
-                                "An Error occurred loading connection properties from file",
-                                "Error", 
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                    options.revalidate();
-                    options.repaint();
-                }
+	/**
+	 * @param lastConnectionProps
+	 *            - the last connection properties used. if this is the first
+	 *            conneciton since starting the applications this will be the
+	 *            default settings
+	 * @param connectionPropertiesTemplateAndLabels
+	 *            - the connection properties and labels to show in this dialog
+	 * @param zooInspectorPanel
+	 *            - the {@link ZooInspectorPanel} linked to this dialog
+	 */
+	public ZooInspectorConnectionPropertiesDialog(ZookeeperProperties lastConnectionProps, ZookeeperProperties defaultConnectionProps, final ZooInspectorPanel zooInspectorPanel) {
 
-            }
-        });
-        GridBagConstraints c3 = new GridBagConstraints();
-        c3.gridx = 0;
-        c3.gridy = 0;
-        c3.gridwidth = 1;
-        c3.gridheight = 1;
-        c3.weightx = 0;
-        c3.weighty = 1;
-        c3.anchor = GridBagConstraints.SOUTHWEST;
-        c3.fill = GridBagConstraints.NONE;
-        c3.insets = new Insets(5, 5, 5, 5);
-        c3.ipadx = 0;
-        c3.ipady = 0;
-        buttonsPanel.add(loadPropsFileButton, c3);
-        JButton saveDefaultPropsFileButton = new JButton("Set As Default");
-        saveDefaultPropsFileButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent e) {
+		setLayout(new BorderLayout());
+		setTitle("Connection Settings");
+		setModal(true);
+		setResizable(true);
+		setPreferredSize(new Dimension(600, 400));
 
-                Properties connectionProps = getConnectionProps();
-                try {
-                    zooInspectorPanel.setdefaultConnectionProps(connectionProps);
-                } 
-                catch (IOException ex) {
-                    LoggerFactory.getLogger().error(
-                            "An Error occurred saving the default connection properties file",
-                            ex);
-                    JOptionPane.showMessageDialog(
-                            ZooInspectorConnectionPropertiesDialog.this,
-                            "An Error occurred saving the default connection properties file",
-                            "Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-        GridBagConstraints c6 = new GridBagConstraints();
-        c6.gridx = 1;
-        c6.gridy = 0;
-        c6.gridwidth = 1;
-        c6.gridheight = 1;
-        c6.weightx = 1;
-        c6.weighty = 1;
-        c6.anchor = GridBagConstraints.SOUTHWEST;
-        c6.fill = GridBagConstraints.NONE;
-        c6.insets = new Insets(5, 5, 5, 5);
-        c6.ipadx = 0;
-        c6.ipady = 0;
-        buttonsPanel.add(saveDefaultPropsFileButton, c6);
-        JButton okButton = new JButton("OK");
-        okButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent e) {
-                ZooInspectorConnectionPropertiesDialog.this.dispose();
-                Properties connectionProps = getConnectionProps();
-                zooInspectorPanel.connect(connectionProps);
-            }
-        });
-        GridBagConstraints c4 = new GridBagConstraints();
-        c4.gridx = 2;
-        c4.gridy = 0;
-        c4.gridwidth = 1;
-        c4.gridheight = 1;
-        c4.weightx = 0;
-        c4.weighty = 1;
-        c4.anchor = GridBagConstraints.SOUTH;
-        c4.fill = GridBagConstraints.HORIZONTAL;
-        c4.insets = new Insets(5, 5, 5, 5);
-        c4.ipadx = 0;
-        c4.ipady = 0;
-        buttonsPanel.add(okButton, c4);
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent e) {
-                ZooInspectorConnectionPropertiesDialog.this.dispose();
-            }
-        });
-        GridBagConstraints c5 = new GridBagConstraints();
-        c5.gridx = 3;
-        c5.gridy = 0;
-        c5.gridwidth = 1;
-        c5.gridheight = 1;
-        c5.weightx = 0;
-        c5.weighty = 1;
-        c5.anchor = GridBagConstraints.SOUTH;
-        c5.fill = GridBagConstraints.HORIZONTAL;
-        c5.insets = new Insets(5, 5, 5, 5);
-        c5.ipadx = 0;
-        c5.ipady = 0;
-        buttonsPanel.add(cancelButton, c5);
-        this.add(options, BorderLayout.CENTER);
-        this.add(buttonsPanel, BorderLayout.SOUTH);
-        this.pack();
-        this.setLocationRelativeTo(getParent());
-    }
+		connectStringText = new JTextField();
+		sessionTimeoutText = new JTextField();
+		encriptionManagerText = new JTextField();
+		authSchemeText = new JTextField();
+		authDataText = new JTextField();
+		sslCheck = new JCheckBox("SSL");
+		truststoreLocationText = new JTextField();
+		truststorePasswordText = new JPasswordField();
+		keystoreLocationText = new JTextField();
+		keystorePasswordText = new JPasswordField();
 
-    private void loadConnectionProps(Properties props) {
-        if (props != null) {
-            for (Object key : props.keySet()) {
-                String propsKey = (String) key;
-                if (components.containsKey(propsKey)) {
-                    JComponent component = components.get(propsKey);
-                    String value = props.getProperty(propsKey);
-                    if (component instanceof JTextField) {
-                        ((JTextField) component).setText(value);
-                    } 
-                    else if (component instanceof JComboBox) {
-                        ((JComboBox<?>) component).setSelectedItem(value);
-                    }
-                }
-            }
-        }
-    }
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
+		tabbedPane.addTab("Properties", createOptionsPanel());
+		tabbedPane.addTab("Security", createSecurityPanel());
+		tabbedPane.addTab("Advanced", createAdvancedPanel());
 
-    private Properties getConnectionProps() {
-        Properties connectionProps = new Properties();
-        for (Entry<String, JComponent> entry : components.entrySet()) {
-            String value = null;
-            JComponent component = entry.getValue();
-            if (component instanceof JTextField) {
-                value = ((JTextField) component).getText();
-            } 
-            else if (component instanceof JComboBox) {
-                value = ((JComboBox<?>) component).getSelectedItem().toString();
-            }
-            connectionProps.put(entry.getKey(), value);
-        }
-        return connectionProps;
-    }
+		loadConnectionProps(lastConnectionProps != null ? lastConnectionProps : defaultConnectionProps);
+
+		JPanel buttonsPanel = createButtonsPanel(zooInspectorPanel);
+		
+		add(tabbedPane, BorderLayout.CENTER);
+		add(buttonsPanel, BorderLayout.SOUTH);
+		pack();
+		setLocationRelativeTo(getParent());
+	}
+	
+	private JPanel createOptionsPanel() {
+		final JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		panel.setLayout(new GridBagLayout());
+
+		int row = 0;
+		panel.add(new JLabel("Connect String"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(connectStringText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		panel.add(new JLabel("Session Timeout"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(sessionTimeoutText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		GridBagConstraints gbc1 = createGridBagConstraints(0, row, 1, 1);
+		gbc1.gridwidth = GridBagConstraints.REMAINDER;
+		gbc1.gridheight = GridBagConstraints.REMAINDER;
+		panel.add(Box.createVerticalGlue(), gbc1);
+		
+		return panel;
+	}
+	
+	private void doSslCheckClick(boolean selected) {
+		truststoreLocationText.setEnabled(selected);
+		truststorePasswordText.setEnabled(selected);
+		keystoreLocationText.setEnabled(selected);
+		keystorePasswordText.setEnabled(selected);
+	}
+	
+	private JPanel createSecurityPanel() {
+		JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		panel.setLayout(new GridBagLayout());
+
+		int row = 0;
+		panel.add(new JLabel("Authentication Scheme"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(authSchemeText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		panel.add(new JLabel("Authentication Data"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(authDataText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		GridBagConstraints gbc1 = createGridBagConstraints(0, row, 0, 0);
+		gbc1.gridwidth = GridBagConstraints.REMAINDER;
+		sslCheck.addActionListener((event) -> {
+			doSslCheckClick(((JCheckBox)event.getSource()).isSelected());
+		});
+		panel.add(sslCheck, gbc1);
+		
+		row++;
+		panel.add(new JLabel("Truststore Location"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(truststoreLocationText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		panel.add(new JLabel("Truststore Password"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(truststorePasswordText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		panel.add(new JLabel("Keystore Location"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(keystoreLocationText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		panel.add(new JLabel("Keystore Password"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(keystorePasswordText, createGridBagConstraints(1, row, 1, 0));
+		
+		row++;
+		GridBagConstraints gbc0 = createGridBagConstraints(0, row, 1, 1);
+		gbc0.gridwidth = GridBagConstraints.REMAINDER;
+		gbc0.gridheight = GridBagConstraints.REMAINDER;
+		panel.add(Box.createVerticalGlue(), gbc0);
+
+		return panel;	
+	}
+	
+	JPanel createAdvancedPanel() {
+		JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		panel.setLayout(new GridBagLayout());
+		
+		int row = 0;
+		panel.add(new JLabel("Data Encription Manager"), createGridBagConstraints(0, row, 0, 0));
+		panel.add(encriptionManagerText, createGridBagConstraints(1, row, 1, 0));
+
+		row++;
+		GridBagConstraints gbc1 = createGridBagConstraints(0, row, 1, 1);
+		gbc1.gridwidth = GridBagConstraints.REMAINDER;
+		gbc1.gridheight = GridBagConstraints.REMAINDER;
+		panel.add(Box.createVerticalGlue(), gbc1);
+
+		return panel;
+	}
+	
+	private JPanel createButtonsPanel(final ZooInspectorPanel zooInspectorPanel) {
+		JPanel buttonsPanel = new JPanel();
+		buttonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+		buttonsPanel.setLayout(new GridBagLayout());
+		JButton loadPropsFileButton = new JButton("Load from file");
+		loadPropsFileButton.addActionListener((event) -> {
+			final JFileChooser fileChooser = new JFileChooser();
+			int result = fileChooser.showOpenDialog(ZooInspectorConnectionPropertiesDialog.this);
+			if (result == JFileChooser.APPROVE_OPTION) {
+				File propsFilePath = fileChooser.getSelectedFile();
+				ZookeeperProperties props = new ZookeeperProperties();
+				try {
+					FileReader reader = new FileReader(propsFilePath);
+					try {
+						props.load(reader);
+						loadConnectionProps(props);
+					}
+					finally {
+						reader.close();
+					}
+				}
+				catch (Exception ex) {
+					LoggerFactory.getLogger().error("An Error occurred loading connection properties from file", ex);
+					JOptionPane.showMessageDialog(ZooInspectorConnectionPropertiesDialog.this, "An Error occurred loading connection properties from file", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+//				optionsPanel.revalidate();
+//				optionsPanel.repaint();
+			}
+		});
+		GridBagConstraints c3 = createGridBagConstraints(0, 0, 0, 1);
+		c3.anchor = GridBagConstraints.SOUTHWEST;
+		c3.fill = GridBagConstraints.NONE;
+		buttonsPanel.add(loadPropsFileButton, c3);
+		JButton saveDefaultPropsFileButton = new JButton("Set As Default");
+		saveDefaultPropsFileButton.addActionListener((event) -> {
+			try {
+				ZookeeperProperties props = getConnectionProps();
+				if (props != null) {
+					zooInspectorPanel.setDefaultConnectionProps(props);
+				}
+			}
+			catch (Exception ex) {
+				LoggerFactory.getLogger().error("An Error occurred saving the default connection properties file", ex);
+				JOptionPane.showMessageDialog(ZooInspectorConnectionPropertiesDialog.this, "An Error occurred saving the default connection properties file", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
+		GridBagConstraints c6 = createGridBagConstraints(1, 0, 1, 1);
+		c6.anchor = GridBagConstraints.SOUTHWEST;
+		c6.fill = GridBagConstraints.NONE;
+		buttonsPanel.add(saveDefaultPropsFileButton, c6);
+		JButton okButton = new JButton("OK");
+		okButton.addActionListener((event) -> {
+			ZookeeperProperties props = getConnectionProps();
+			if (props != null) {
+				ZooInspectorConnectionPropertiesDialog.this.dispose();
+				zooInspectorPanel.connect(props);
+			}
+		});
+		GridBagConstraints c4 = createGridBagConstraints(2, 0, 0, 1);
+		c4.anchor = GridBagConstraints.SOUTH;
+		buttonsPanel.add(okButton, c4);
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener((event) -> {
+			ZooInspectorConnectionPropertiesDialog.this.dispose();
+		});
+		GridBagConstraints c5 = createGridBagConstraints(3, 0, 0, 1);
+		c5.anchor = GridBagConstraints.SOUTH;
+		buttonsPanel.add(cancelButton, c5);
+		return buttonsPanel;
+	}
+
+	private static GridBagConstraints createGridBagConstraints(int gridx, int gridy, double weightx, double weighty) {
+		return new GridBagConstraints(
+							gridx, gridy, 
+							1, 1, 
+							weightx, weighty, 
+							GridBagConstraints.WEST, 
+							GridBagConstraints.HORIZONTAL, 
+							new Insets(5, 5, 5, 5), 
+							0, 0
+					);
+	}
+
+	private void loadConnectionProps(ZookeeperProperties props) {
+		if (props == null) {
+			return;
+		}
+		connectStringText.setText(props.getConnectionString());
+		sessionTimeoutText.setText(String.valueOf(props.getSessionTimeoutMs()));
+		encriptionManagerText.setText(props.getEncryptionManager());
+		authSchemeText.setText(props.getAuthScheme());
+		authDataText.setText(props.getAuthData());
+		sslCheck.setSelected(props.isClientSecure());
+		truststoreLocationText.setText(props.getTruststoreLocation());
+		truststorePasswordText.setText(props.getTruststorePassword());
+		keystoreLocationText.setText(props.getKeystoreLocation());
+		keystorePasswordText.setText(props.getKeystorePassword());
+		doSslCheckClick(sslCheck.isSelected());
+	}
+
+	private ZookeeperProperties getConnectionProps() {
+		ZookeeperProperties result = new ZookeeperProperties();
+		
+		result.setConnectionString(connectStringText.getText());
+		try {
+			result.setSessionTimeoutMs(Integer.valueOf(sessionTimeoutText.getText()));
+		}
+		catch (NumberFormatException ex) {
+			JOptionPane.showMessageDialog(ZooInspectorConnectionPropertiesDialog.this, "Session Timeout is not a number", "Error", JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+		result.setEncryptionManager(encriptionManagerText.getText());
+		result.setAuthScheme(authSchemeText.getText());
+		result.setAuthData(authDataText.getText());
+		result.setClientSecure(sslCheck.isSelected());
+		result.setTruststoreLocation(truststoreLocationText.getText());
+		result.setTruststorePassword(new String(truststorePasswordText.getPassword()));
+		result.setKeystoreLocation(keystoreLocationText.getText());
+		result.setKeystorePassword(new String(keystorePasswordText.getPassword()));
+		
+		return result;
+	}
 }

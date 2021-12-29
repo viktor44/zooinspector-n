@@ -18,12 +18,14 @@
 package org.apache.zookeeper.inspector.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.swing.BorderFactory;
@@ -31,6 +33,8 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import org.apache.zookeeper.inspector.ZooInspector;
 import org.apache.zookeeper.inspector.logger.LoggerFactory;
@@ -49,14 +53,24 @@ public class ZooInspectorAboutDialog extends JDialog {
         this.setIconImage(iconResource.get(IconResource.ICON_INFORMATION, "About " + ZooInspector.APP_NAME).getImage());
         this.setTitle("About " + ZooInspector.APP_NAME);
         this.setModal(true);
-        this.setAlwaysOnTop(true);
-        this.setResizable(false);
+        this.setResizable(true);
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JEditorPane aboutPane = new JEditorPane();
         aboutPane.setEditable(false);
         aboutPane.setOpaque(false);
+        aboutPane.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+        aboutPane.addHyperlinkListener((event) -> {
+                if(event.getEventType() == HyperlinkEvent.EventType.ACTIVATED && Desktop.isDesktopSupported()) {
+               	    try {
+						Desktop.getDesktop().browse(event.getURL().toURI());
+					}
+					catch (IOException | URISyntaxException ex) {
+						LoggerFactory.getLogger().error("", ex);
+					}
+                }
+        });        
         URL aboutURL = ZooInspectorAboutDialog.class.getResource("about.html");
         try {
             aboutPane.setPage(aboutURL);
@@ -65,7 +79,7 @@ public class ZooInspectorAboutDialog extends JDialog {
             LoggerFactory.getLogger().error("Error loading about.html, file may be corrupt", e);
         }
         panel.add(aboutPane, BorderLayout.CENTER);
-        panel.setPreferredSize(new Dimension(600, 200));
+        panel.setPreferredSize(new Dimension(600, 300));
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));

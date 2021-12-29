@@ -47,10 +47,10 @@ public interface ZooInspectorReadOnlyManager {
      */
     public abstract List<Map<String, String>> getACLs(String nodePath);
 
-    /**
-     * @return the metaData for the current session
-     */
-    public abstract Map<String, String> getSessionMeta();
+//    /**
+//     * @return the metaData for the current session
+//     */
+//    public abstract Map<String, String> getSessionMeta();
 
     /**
      * @param nodePath

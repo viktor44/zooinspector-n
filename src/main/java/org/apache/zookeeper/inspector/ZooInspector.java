@@ -17,6 +17,7 @@
  */
 package org.apache.zookeeper.inspector;
 
+import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -60,7 +61,7 @@ public class ZooInspector {
             });
             frame.setLocationByPlatform(true);
             frame.setContentPane(zooInspectorPanel);
-            frame.setSize(1024, 768);
+            frame.setSize(new Dimension(1024, 768));
             frame.setVisible(true);
             
             JOptionPane.setRootFrame(frame);

@@ -50,49 +50,31 @@ public class NodeViewerData extends ZooInspectorNodeViewer {
         this.toolbar = new JToolBar();
         this.toolbar.setFloatable(false);
         JScrollPane scroller = new JScrollPane(this.dataArea);
-        scroller
-                .setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         this.add(scroller, BorderLayout.CENTER);
         this.add(this.toolbar, BorderLayout.NORTH);
-        JButton saveButton = new JButton(ZooInspector.iconResource.get(IconResource.ICON_SAVE,""));
-        saveButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
+        JButton saveButton = new JButton(ZooInspector.iconResource.get(IconResource.ICON_SAVE, ""));
+        saveButton.addActionListener((event) -> {
                 if (selectedNode != null) {
-                    if (JOptionPane.showConfirmDialog(NodeViewerData.this,
-                            "Are you sure you want to save this node?"
-                                    + " (this action cannot be reverted)",
-                            "Confirm Save", JOptionPane.YES_NO_OPTION,
+                    if (JOptionPane.showConfirmDialog(
+                    		NodeViewerData.this,
+                            "Are you sure you want to save this node? (this action cannot be reverted)",
+                            "Confirm Save", 
+                            JOptionPane.YES_NO_OPTION,
                             JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
-                        zooInspectorManager.setData(selectedNode, dataArea
-                                .getText());
+                        zooInspectorManager.setData(selectedNode, dataArea.getText());
                     }
                 }
-            }
         });
         this.toolbar.add(saveButton);
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer#
-     * getTitle()
-     */
     @Override
     public String getTitle() {
         return "Node Data";
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer#
-     * nodeSelectionChanged(java.util.Set)
-     */
     @Override
     public void nodeSelectionChanged(List<String> selectedNodes) {
         if (selectedNodes.size() > 0) {
@@ -101,8 +83,7 @@ public class NodeViewerData extends ZooInspectorNodeViewer {
 
                 @Override
                 protected String doInBackground() throws Exception {
-                    return NodeViewerData.this.zooInspectorManager
-                            .getData(NodeViewerData.this.selectedNode);
+                    return NodeViewerData.this.zooInspectorManager.getData(NodeViewerData.this.selectedNode);
                 }
 
                 @Override
@@ -110,14 +91,14 @@ public class NodeViewerData extends ZooInspectorNodeViewer {
                     String data = "";
                     try {
                         data = get();
-                    } catch (InterruptedException e) {
+                    } 
+                    catch (InterruptedException e) {
                         LoggerFactory.getLogger().error(
-                                "Error retrieving data for node: "
-                                        + NodeViewerData.this.selectedNode, e);
-                    } catch (ExecutionException e) {
+                                "Error retrieving data for node: " + NodeViewerData.this.selectedNode, e);
+                    } 
+                    catch (ExecutionException e) {
                         LoggerFactory.getLogger().error(
-                                "Error retrieving data for node: "
-                                        + NodeViewerData.this.selectedNode, e);
+                                "Error retrieving data for node: " + NodeViewerData.this.selectedNode, e);
                     }
                     NodeViewerData.this.dataArea.setText(data);
                 }
@@ -126,18 +107,8 @@ public class NodeViewerData extends ZooInspectorNodeViewer {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer#
-     * setZooInspectorManager
-     * (org.apache.zookeeper.inspector.manager.ZooInspectorNodeManager)
-     */
     @Override
-    public void setZooInspectorManager(
-            ZooInspectorNodeManager zooInspectorManager) {
+    public void setZooInspectorManager(ZooInspectorNodeManager zooInspectorManager) {
         this.zooInspectorManager = zooInspectorManager;
     }
-
 }
