@@ -21,11 +21,10 @@ jobs:
           ./mvnw clean package --batch-mode --no-transfer-progress      
       - run: |
           $JAVA_HOME/bin/jpackage @target/jpackage-macos.args --type dmg
-        shell: cmd
       - uses: softprops/action-gh-release@v2
         with:
           draft: true
-          files: target/distr/win/*.dmg
+          files: target/distr/macos/*.dmg
 
   Windows:
     runs-on: windows-2019
