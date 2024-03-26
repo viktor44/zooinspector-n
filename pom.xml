@@ -40,7 +40,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.3.0</version>
 				<configuration>
-					<outputDirectory>${project.build.directory}/distr/lib</outputDirectory>
+					<outputDirectory>${project.build.directory}/out/lib</outputDirectory>
 					<archive>
 						<manifest>
 							<mainClass>org.apache.zookeeper.inspector.ZooInspector</mainClass>
@@ -60,7 +60,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/distr/lib</outputDirectory>
+							<outputDirectory>${project.build.directory}/out/lib</outputDirectory>
 							<includeScope>runtime</includeScope>
 						</configuration>
 					</execution>
@@ -78,7 +78,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/distr</outputDirectory>
+							<outputDirectory>${project.build.directory}/out</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}/etc/distr</directory>

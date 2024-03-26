@@ -11,7 +11,7 @@
 	<includeBaseDirectory>true</includeBaseDirectory>
 	<fileSets>
 		<fileSet>
-			<directory>${project.build.directory}/distr</directory>
+			<directory>${project.build.directory}/out</directory>
 			<outputDirectory>/</outputDirectory>
 			<fileMode>0777</fileMode>
 			<includes>
@@ -19,7 +19,7 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${project.build.directory}/distr</directory>
+			<directory>${project.build.directory}/out</directory>
 			<outputDirectory>/</outputDirectory>
 			<fileMode>0666</fileMode>
 			<excludes>
