@@ -17,6 +17,7 @@ jobs:
           distribution: 'temurin'
           architecture: x64
       - run: |
+          chmod 755 mvnw 
           ./mvnw clean package --batch-mode --no-transfer-progress      
       - run: |
           $JAVA_HOME/bin/jpackage @target/jpackage-macos.args --type dmg
