@@ -117,6 +117,7 @@
 									<directory>${basedir}/src/assembly</directory>
 									<filtering>true</filtering>
 									<includes>
+										<include>jpackage-macos.args</include>
 										<include>jpackage-win.args</include>
 									</includes>
 								</resource>
