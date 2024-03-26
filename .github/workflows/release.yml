@@ -17,5 +17,5 @@ jobs:
           distribution: 'temurin'
           architecture: x64
       - run: ./mvnw clean package --batch-mode --no-transfer-progress      
-      - run: "%JAVA_HOME%\bin\jpackage.exe" @target\jpackage-win.args --type exe
+      - run: %JAVA_HOME%\bin\jpackage.exe @target\jpackage-win.args --type exe
         shell: cmd
