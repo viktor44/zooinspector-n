@@ -16,6 +16,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           architecture: x64
+      - run: ./mvnw clean package --batch-mode --no-transfer-progres      
       - run: |
-          ./mvnw clean package --batch-mode --no-transfer-progres      
           %JAVA_HOME%\bin\jpackage.exe --type exe --input target\out\lib --dest target\distr\win --main-jar zooinspector-n-1.1.RC1.jar --main-class org.apache.zookeeper.inspector.ZooInspector
