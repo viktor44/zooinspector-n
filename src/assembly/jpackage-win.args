@@ -1,0 +1,8 @@
+--icon etc\distr\app.ico
+--input target\out\lib
+--dest target\distr\win
+--name ZooInspectorN
+--vendor Viktor44
+--app-version ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}
+--main-jar ${project.build.finalName}.jar
+

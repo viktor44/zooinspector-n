@@ -1,6 +1,7 @@
 target/
+temp/
+.mvn/wrapper/*.jar
 .classpath
 .project
 .factorypath
-.settings
-/temp
+.settings/

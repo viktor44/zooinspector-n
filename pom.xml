@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.zookeeper</groupId>
 	<artifactId>zooinspector-n</artifactId>
-	<version>1.1.RC1</version>
+	<version>1.1.RC2</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -15,7 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<zookeeper.version>3.7.0</zookeeper.version>
+		<zookeeper.version>3.7.2</zookeeper.version>
 		<guava.version>18.0</guava.version>
 		<slf4j.version>1.7.30</slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
@@ -67,6 +67,19 @@
 				</executions>				
 			</plugin>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>parse-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
@@ -91,12 +104,31 @@
 							</resources>
 						</configuration>
 					</execution>
+					<execution>
+						<id>jpackage-args</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/src/assembly</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>jpackage-win.args</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>3.7.1</version>
 				<executions>
 					<execution>
 						<phase>package</phase>

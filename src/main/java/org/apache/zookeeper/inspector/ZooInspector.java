@@ -18,8 +18,10 @@
 package org.apache.zookeeper.inspector;
 
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -39,19 +41,14 @@ public class ZooInspector {
 	
 	public static IconResource iconResource;
 	
-    /**
-     * @param args
-     *            - not used. The value of these parameters will have no effect
-     *            on the application
-     */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            JFrame frame = new JFrame(APP_NAME);
+            final JFrame frame = new JFrame(APP_NAME);
+            
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             iconResource = new IconResource();
-            final ZooInspectorPanel zooInspectorPanel = new ZooInspectorPanel(
-                    new ZooInspectorManagerImpl(), iconResource);
+            final ZooInspectorPanel zooInspectorPanel = new ZooInspectorPanel(new ZooInspectorManagerImpl(), iconResource);
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
@@ -59,9 +56,19 @@ public class ZooInspector {
                     zooInspectorPanel.disconnect(true);
                 }
             });
+            final Toolkit toolkit = Toolkit.getDefaultToolkit();
+    		frame.setIconImages(
+    				List.of(
+    			    		toolkit.createImage(ZooInspector.class.getResource("/icons/app_16.png")),
+    			    		toolkit.createImage(ZooInspector.class.getResource("/icons/app_24.png")),
+    			    		toolkit.createImage(ZooInspector.class.getResource("/icons/app_32.png")),
+    			    		toolkit.createImage(ZooInspector.class.getResource("/icons/app_64.png")),
+    			    		toolkit.createImage(ZooInspector.class.getResource("/icons/app_128.png"))
+    				)
+    		);
             frame.setLocationByPlatform(true);
             frame.setContentPane(zooInspectorPanel);
-            frame.setSize(new Dimension(1024, 768));
+            frame.setSize(800, 600);
             frame.setVisible(true);
             
             JOptionPane.setRootFrame(frame);
