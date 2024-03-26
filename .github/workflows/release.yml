@@ -21,7 +21,10 @@ jobs:
       - run: |
           %JAVA_HOME%\bin\jpackage.exe @target\jpackage-win.args --type exe
         shell: cmd
-      - uses: actions/upload-artifact@v4
-        with:
-          name: my-artifact
-          path: target/distr/win/*.exe
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: my-artifact
+#          path: target/distr/win/*.exe
+       - uses: softprops/action-gh-release@v2
+         with:
+           files: target/distr/win/*.exe
