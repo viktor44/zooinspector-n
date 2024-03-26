@@ -19,3 +19,4 @@ jobs:
       - run: ./mvnw clean package --batch-mode --no-transfer-progress      
       - run: |
           %JAVA_HOME%\bin\jpackage.exe --type exe --input target\out\lib --dest target\distr\win --main-jar zooinspector-n-1.1.RC1.jar --main-class org.apache.zookeeper.inspector.ZooInspector
+        shell: cmd
