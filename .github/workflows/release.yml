@@ -17,7 +17,7 @@ jobs:
           distribution: 'temurin'
           architecture: x64
       - uses: apple-actions/import-codesign-certs@v2
-        with: 
+        with:
           p12-file-base64: ${{ secrets.MACOS_DEV_CERT }}
           p12-password: ${{ secrets.MACOS_DEV_CERT_PASSWORD }}
       - run: |
