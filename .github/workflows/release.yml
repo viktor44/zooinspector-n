@@ -9,7 +9,6 @@ jobs:
 
   MacOs:
     runs-on: macos-13
-    environment: Release
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -26,6 +25,13 @@ jobs:
           ./mvnw clean package --batch-mode --no-transfer-progress      
       - run: |
           $JAVA_HOME/bin/jpackage @target/jpackage-macos.args --type dmg
+      - name: Notarize Release Build
+        uses: lando/notarize-action@v2
+        with:
+          product-path: target/distr/macos/*.dmg
+          appstore-connect-username: ${{ secrets.MACOS_NOTARIZATION_USERNAME }}
+          appstore-connect-password: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
+          appstore-connect-team-id: ${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}
       - uses: softprops/action-gh-release@v2
         with:
           draft: true
@@ -33,7 +39,6 @@ jobs:
 
   Windows:
     runs-on: windows-2019
-    environment: Release
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
