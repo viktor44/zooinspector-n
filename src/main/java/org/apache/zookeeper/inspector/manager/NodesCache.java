@@ -20,15 +20,18 @@ package org.apache.zookeeper.inspector.manager;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class NodesCache {
 
     public static final int CACHE_SIZE = 40000;
@@ -62,10 +65,9 @@ public class NodesCache {
                 Collections.sort(children);
                 return children;
             }
-        } catch (Exception e) {
-            LoggerFactory.getLogger().error(
-                    "Error occurred retrieving child of node: " + nodePath, e
-            );
+        } 
+        catch (Exception e) {
+            log.error("Error occurred retrieving child of node: {}", nodePath, e);
         }
         return null;
     }
@@ -75,10 +77,9 @@ public class NodesCache {
         try {
             childNodes = nodes.get(nodePath);
             return childNodes.get(index);
-        } catch (ExecutionException e) {
-            LoggerFactory.getLogger().error(
-                    "Error occurred retrieving child " + index + "of node: " + nodePath, e
-            );
+        } 
+        catch (ExecutionException e) {
+            log.error("Error occurred retrieving child {} of node: {}", index, nodePath, e);
         }
         return null;
     }

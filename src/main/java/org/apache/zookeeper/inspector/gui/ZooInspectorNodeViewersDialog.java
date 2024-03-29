@@ -58,17 +58,19 @@ import javax.swing.event.ListSelectionListener;
 
 import org.apache.zookeeper.inspector.gui.Toolbar.Button;
 import org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorManager;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A {@link JDialog} for configuring which {@link ZooInspectorNodeViewer}s to
  * show in the application
  */
+@Slf4j
 public class ZooInspectorNodeViewersDialog extends JDialog implements
         ListSelectionListener {
 
-    private final JList viewersList;
+    private final JList<ZooInspectorNodeViewer> viewersList;
     private final JFileChooser fileChooser = new JFileChooser(new File("."));
     private final Map<Button, JButton> buttons = new HashMap<Button, JButton>();
     /**
@@ -98,17 +100,15 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         final JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         panel.setLayout(new GridBagLayout());
-        viewersList = new JList();
-        DefaultListModel model = new DefaultListModel();
+        viewersList = new JList<>();
+        DefaultListModel<ZooInspectorNodeViewer> model = new DefaultListModel<>();
         for (ZooInspectorNodeViewer viewer : newViewers) {
             model.addElement(viewer);
         }
         viewersList.setModel(model);
         viewersList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList list,
-                    Object value, int index, boolean isSelected,
-                    boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) value;
                 JLabel label = (JLabel) super.getListCellRendererComponent(
                         list, value, index, isSelected, cellHasFocus);
@@ -139,7 +139,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
             @Override
             public boolean importData(TransferHandler.TransferSupport info) {
                 JList.DropLocation dl = (JList.DropLocation) info.getDropLocation();
-                DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                 int index = dl.getIndex();
                 boolean insert = dl.isInsert();
                 // Get the string that is being dropped.
@@ -152,8 +152,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                     return false;
                 }
                 try {
-                    ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) Class
-                            .forName(data).newInstance();
+                    ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) Class.forName(data).newInstance();
                     if (listModel.contains(viewer)) {
                         listModel.removeElement(viewer);
                     }
@@ -166,7 +165,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                     return true;
                 } 
                 catch (Exception e) {
-                    LoggerFactory.getLogger().error("Error instantiating class: " + data, e);
+                    log.error("Error instantiating class: " + data, e);
                     return false;
                 }
 
@@ -179,8 +178,8 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
 
             @Override
             protected Transferable createTransferable(JComponent c) {
-                JList list = (JList) c;
-                ZooInspectorNodeViewer value = (ZooInspectorNodeViewer) list.getSelectedValue();
+                JList<ZooInspectorNodeViewer> list = (JList<ZooInspectorNodeViewer>) c;
+                ZooInspectorNodeViewer value = list.getSelectedValue();
                 return value;
             }
         });
@@ -273,7 +272,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         buttons.get(Button.up).addActionListener(new ActionListener() {
         	@Override
             public void actionPerformed(ActionEvent e) {
-                DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                 ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) viewersList.getSelectedValue();
                 int index = viewersList.getSelectedIndex();
                 if (listModel.contains(viewer)) {
@@ -286,7 +285,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         buttons.get(Button.down).addActionListener(new ActionListener() {
         	@Override
             public void actionPerformed(ActionEvent e) {
-                DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                 ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) viewersList.getSelectedValue();
                 int index = viewersList.getSelectedIndex();
                 if (listModel.contains(viewer)) {
@@ -299,7 +298,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         buttons.get(Button.remove).addActionListener(new ActionListener() {
         	@Override
             public void actionPerformed(ActionEvent e) {
-                DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                 ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) viewersList.getSelectedValue();
                 int index = viewersList.getSelectedIndex();
                 if (listModel.contains(viewer)) {
@@ -324,7 +323,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                 } 
                 else {
                     try {
-                        DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                        DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                         ZooInspectorNodeViewer viewer = (ZooInspectorNodeViewer) Class.forName(className).newInstance();
                         if (listModel.contains(viewer)) {
                             JOptionPane.showMessageDialog(
@@ -339,14 +338,13 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                         }
                     } 
                     catch (Exception ex) {
-                        LoggerFactory.getLogger().error(
-                                "An error occurred while instaniating the node viewer. ",
-                                ex);
+                        log.error("An error occurred while instaniating the node viewer. ", ex);
                         JOptionPane.showMessageDialog(
                                 ZooInspectorNodeViewersDialog.this,
-                                "An error occurred while instaniating the node viewer: "
-                                        + ex.getMessage(), "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                                "An error occurred while instaniating the node viewer: " + ex.getMessage(), 
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
                     }
                 }
             }
@@ -409,7 +407,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                                         JOptionPane.WARNING_MESSAGE);
                     }
                     if (answer == JOptionPane.YES_OPTION) {
-                        DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                        DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                         List<String> nodeViewersClassNames = new ArrayList<String>();
                         Object[] modelContents = listModel.toArray();
                         for (Object o : modelContents) {
@@ -421,14 +419,13 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                             manager.saveNodeViewersFile(selectedFile, nodeViewersClassNames);
                         } 
                         catch (IOException ex) {
-                            LoggerFactory.getLogger().error(
-                                            "Error saving node viewer configuration from file.",
-                                            ex);
+                            log.error("Error saving node viewer configuration from file.", ex);
                             JOptionPane.showMessageDialog(
                                     ZooInspectorNodeViewersDialog.this,
-                                    "Error saving node viewer configuration from file: "
-                                            + ex.getMessage(), "Error",
-                                    JOptionPane.ERROR_MESSAGE);
+                                    "Error saving node viewer configuration from file: " + ex.getMessage(), 
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
                         }
                     }
                 }
@@ -448,7 +445,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                                     .forName(nodeViewersClassName).newInstance();
                             nodeViewers.add(viewer);
                         }
-                        DefaultListModel model = new DefaultListModel();
+                        DefaultListModel<ZooInspectorNodeViewer> model = new DefaultListModel<ZooInspectorNodeViewer>();
                         for (ZooInspectorNodeViewer viewer : nodeViewers) {
                             model.addElement(viewer);
                         }
@@ -457,20 +454,19 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                         panel.repaint();
                     } 
                     catch (Exception ex) {
-                        LoggerFactory.getLogger().error(
-                                        "Error loading node viewer configuration from file.",
-                                        ex);
+                        log.error("Error loading node viewer configuration from file.", ex);
                         JOptionPane.showMessageDialog(
                                 ZooInspectorNodeViewersDialog.this,
-                                "Error loading node viewer configuration from file: "
-                                        + ex.getMessage(), "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                                "Error loading node viewer configuration from file: " + ex.getMessage(), 
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
                     }
                 }
             }
         });
         buttons.get(Button.setDefaults).addActionListener(new ActionListener() {
-
+        	@Override
             public void actionPerformed(ActionEvent e) {
                 int answer = JOptionPane.showConfirmDialog(
                                 ZooInspectorNodeViewersDialog.this,
@@ -479,7 +475,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.WARNING_MESSAGE);
                 if (answer == JOptionPane.YES_OPTION) {
-                    DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                    DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                     List<String> nodeViewersClassNames = new ArrayList<String>();
                     Object[] modelContents = listModel.toArray();
                     for (Object o : modelContents) {
@@ -490,14 +486,13 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
                         manager.setDefaultNodeViewerConfiguration(nodeViewersClassNames);
                     } 
                     catch (IOException ex) {
-                        LoggerFactory.getLogger().error(
-                                        "Error setting default node viewer configuration.",
-                                        ex);
+                        log.error("Error setting default node viewer configuration.", ex);
                         JOptionPane.showMessageDialog(
                                 ZooInspectorNodeViewersDialog.this,
-                                "Error setting default node viewer configuration: "
-                                        + ex.getMessage(), "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                                "Error setting default node viewer configuration: " + ex.getMessage(), 
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
                     }
                 }
             }
@@ -510,7 +505,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         	@Override
             public void actionPerformed(ActionEvent e) {
                 ZooInspectorNodeViewersDialog.this.dispose();
-                DefaultListModel listModel = (DefaultListModel) viewersList.getModel();
+                DefaultListModel<ZooInspectorNodeViewer> listModel = (DefaultListModel<ZooInspectorNodeViewer>) viewersList.getModel();
                 newViewers.clear();
                 Object[] modelContents = listModel.toArray();
                 for (Object o : modelContents) {
@@ -538,13 +533,6 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
         this.setLocationRelativeTo(getParent());
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event
-     * .ListSelectionEvent)
-     */
     @Override
     public void valueChanged(ListSelectionEvent e) {
         JButton removeButton = buttons.get(Button.remove);
@@ -565,7 +553,7 @@ public class ZooInspectorNodeViewersDialog extends JDialog implements
             else {
                 upButton.setEnabled(true);
             }
-            if (index == ((DefaultListModel) viewersList.getModel()).getSize()) {
+            if (index == viewersList.getModel().getSize()) {
                 downButton.setEnabled(false);
             } 
             else {

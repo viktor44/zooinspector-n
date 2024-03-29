@@ -91,13 +91,7 @@ public class ZooInspectorNodeViewersPanel extends JPanel implements
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.swing.event.TreeSelectionListener#valueChanged(javax.swing.event
-     * .TreeSelectionEvent)
-     */
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         TreePath[] paths = e.getPaths();
         selectedNodes.clear();
@@ -127,13 +121,7 @@ public class ZooInspectorNodeViewersPanel extends JPanel implements
         reloadSelectedViewer();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent
-     * )
-     */
+    @Override
     public void stateChanged(ChangeEvent e) {
         reloadSelectedViewer();
     }

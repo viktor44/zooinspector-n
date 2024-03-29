@@ -49,14 +49,16 @@ import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.Pair;
 import org.apache.zookeeper.inspector.manager.ZookeeperProperties;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The connection properties dialog. This is used to determine the settings for
  * connecting to a zookeeper instance
  */
+@Slf4j
 public class ZooInspectorConnectionPropertiesDialog extends JDialog {
 
 	private JTextField connectStringText;
@@ -229,7 +231,7 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
 					}
 				}
 				catch (Exception ex) {
-					LoggerFactory.getLogger().error("An Error occurred loading connection properties from file", ex);
+					log.error("An Error occurred loading connection properties from file", ex);
 					JOptionPane.showMessageDialog(ZooInspectorConnectionPropertiesDialog.this, "An Error occurred loading connection properties from file", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 //				optionsPanel.revalidate();
@@ -249,7 +251,7 @@ public class ZooInspectorConnectionPropertiesDialog extends JDialog {
 				}
 			}
 			catch (Exception ex) {
-				LoggerFactory.getLogger().error("An Error occurred saving the default connection properties file", ex);
+				log.error("An Error occurred saving the default connection properties file", ex);
 				JOptionPane.showMessageDialog(ZooInspectorConnectionPropertiesDialog.this, "An Error occurred saving the default connection properties file", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		});

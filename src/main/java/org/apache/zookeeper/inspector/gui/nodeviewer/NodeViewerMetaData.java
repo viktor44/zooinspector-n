@@ -34,14 +34,16 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
 import org.apache.zookeeper.data.Stat;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorNodeManager;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A node viewer for displaying the meta data for the currently selected node.
  * The meta data is essentially the information from the {@link Stat} for the
  * node
  */
+@Slf4j
 public class NodeViewerMetaData extends ZooInspectorNodeViewer {
     private ZooInspectorNodeManager zooInspectorManager;
     private final JPanel metaDataPanel;
@@ -70,13 +72,6 @@ public class NodeViewerMetaData extends ZooInspectorNodeViewer {
         return "Node Metadata";
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer#
-     * nodeSelectionChanged(java.util.Set)
-     */
     @Override
     public void nodeSelectionChanged(List<String> selectedNodes) {
         this.metaDataPanel.removeAll();
@@ -96,16 +91,10 @@ public class NodeViewerMetaData extends ZooInspectorNodeViewer {
                         data = get();
                     } catch (InterruptedException e) {
                         data = new HashMap<String, String>();
-                        LoggerFactory.getLogger().error(
-                                "Error retrieving meta data for node: "
-                                        + NodeViewerMetaData.this.selectedNode,
-                                e);
+                        log.error("Error retrieving meta data for node: {}", NodeViewerMetaData.this.selectedNode, e);
                     } catch (ExecutionException e) {
                         data = new HashMap<String, String>();
-                        LoggerFactory.getLogger().error(
-                                "Error retrieving meta data for node: "
-                                        + NodeViewerMetaData.this.selectedNode,
-                                e);
+                        log.error("Error retrieving meta data for node: {}", NodeViewerMetaData.this.selectedNode, e);
                     }
                     NodeViewerMetaData.this.metaDataPanel
                             .setLayout(new GridBagLayout());

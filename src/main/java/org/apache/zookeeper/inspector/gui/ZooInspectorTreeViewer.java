@@ -56,8 +56,7 @@ import com.nitido.utils.toaster.Toaster;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 /**
- * A {@link JPanel} for showing the tree view of all the nodes in the zookeeper
- * instance
+ * A {@link JPanel} for showing the tree view of all the nodes in the zookeeper instance
  */
 public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
     private final ZooInspectorManager zooInspectorManager;
@@ -105,15 +104,15 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
         this.toasterManager.setToasterColor(Color.WHITE);
         toasterIcon = iconResource.get(IconResource.ICON_INFORMATION,"");
         addNotify.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 List<String> selectedNodes = getSelectedNodes();
-                zooInspectorManager.addWatchers(selectedNodes,
-                        ZooInspectorTreeViewer.this);
+                zooInspectorManager.addWatchers(selectedNodes, ZooInspectorTreeViewer.this);
             }
         });
-        final JMenuItem removeNotify = new JMenuItem(
-                "Remove Change Notification");
+        final JMenuItem removeNotify = new JMenuItem("Remove Change Notification");
         removeNotify.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 List<String> selectedNodes = getSelectedNodes();
                 zooInspectorManager.removeWatchers(selectedNodes);
@@ -135,8 +134,7 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
                     popupMenu.add(deleteNode);
                     popupMenu.add(addNotify);
                     popupMenu.add(removeNotify);
-                    popupMenu.show(ZooInspectorTreeViewer.this, e.getX(), e
-                            .getY());
+                    popupMenu.show(ZooInspectorTreeViewer.this, e.getX(), e.getY());
                 }
             }
         });
@@ -160,8 +158,7 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
 
             @Override
             protected Boolean doInBackground() throws Exception {
-                tree.setModel(new DefaultTreeModel(new ZooInspectorTreeNode(
-                        "/", null)));
+                tree.setModel(new DefaultTreeModel(new ZooInspectorTreeNode("/", null)));
                 return true;
             }
 
@@ -183,8 +180,7 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
         tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
     }
 
-    private static class ZooInspectorTreeCellRenderer extends
-            DefaultTreeCellRenderer {
+    private static class ZooInspectorTreeCellRenderer extends DefaultTreeCellRenderer {
         public ZooInspectorTreeCellRenderer(IconResource iconResource) {
             setLeafIcon(iconResource.get(IconResource.ICON_TREE_LEAF,""));
             setOpenIcon(iconResource.get(IconResource.ICON_TREE_OPEN,""));
@@ -202,44 +198,31 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
             this.nodePath = nodePath;
             int index = nodePath.lastIndexOf("/");
             if (index == -1) {
-                throw new IllegalArgumentException("Invalid node path"
-                        + nodePath);
+                throw new IllegalArgumentException("Invalid node path" + nodePath);
             }
             this.nodeName = nodePath.substring(index + 1);
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#children()
-         */
+        @Override
         public Enumeration<TreeNode> children() {
             List<String> children = zooInspectorManager
                     .getChildren(this.nodePath);
             Collections.sort(children);
             List<TreeNode> returnChildren = new ArrayList<TreeNode>();
             for (String child : children) {
-                returnChildren.add(new ZooInspectorTreeNode((this.nodePath
-                        .equals("/") ? "" : this.nodePath)
-                        + "/" + child, this));
+                returnChildren.add(
+                		new ZooInspectorTreeNode((this.nodePath.equals("/") ? "" : this.nodePath) + "/" + child, this)
+                );
             }
             return Collections.enumeration(returnChildren);
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#getAllowsChildren()
-         */
+        @Override
         public boolean getAllowsChildren() {
             return zooInspectorManager.isAllowsChildren(this.nodePath);
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#getChildAt(int)
-         */
+        @Override
         public TreeNode getChildAt(int childIndex) {
             String child = zooInspectorManager.getNodeChild(this.nodePath,
                     childIndex);
@@ -251,38 +234,22 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
             return null;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#getChildCount()
-         */
+        @Override
         public int getChildCount() {
             return zooInspectorManager.getNumChildren(this.nodePath);
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#getIndex(javax.swing.tree.TreeNode)
-         */
+        @Override
         public int getIndex(TreeNode node) {
             return zooInspectorManager.getNodeIndex(this.nodePath);
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#getParent()
-         */
+        @Override
         public TreeNode getParent() {
             return this.parent;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see javax.swing.tree.TreeNode#isLeaf()
-         */
+        @Override
         public boolean isLeaf() {
             return !zooInspectorManager.hasChildren(this.nodePath);
         }
@@ -357,15 +324,8 @@ public class ZooInspectorTreeViewer extends JPanel implements NodeListener {
         return selectedNodes;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.apache.zookeeper.inspector.manager.NodeListener#processEvent(java
-     * .lang.String, java.lang.String, java.util.Map)
-     */
-    public void processEvent(String nodePath, String eventType,
-            Map<String, String> eventInfo) {
+    @Override
+    public void processEvent(String nodePath, String eventType, Map<String, String> eventInfo) {
         StringBuilder sb = new StringBuilder();
         sb.append("Node: ");
         sb.append(nodePath);

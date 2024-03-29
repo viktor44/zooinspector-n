@@ -18,13 +18,9 @@
 
 package org.apache.zookeeper.inspector.gui;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
-
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 
 /**
  * @see http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
@@ -63,9 +59,13 @@ public class IconResource {
     public URL find(String name) {
         String iconPath = buildIconPath(name);
         URL iconUrl = getClass().getResource(iconPath);
-        if (null != iconUrl) return iconUrl;
+        if (null != iconUrl) {
+        	return iconUrl;
+        }
 
-        if (!name.equals(FALLBACK_ICON)) return find(FALLBACK_ICON);
+        if (!name.equals(FALLBACK_ICON)) {
+        	return find(FALLBACK_ICON);
+        }
         return null;
     }
 

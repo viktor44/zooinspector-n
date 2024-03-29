@@ -37,11 +37,13 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import org.apache.zookeeper.inspector.ZooInspector;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The About Dialog for the application
  */
+@Slf4j
 public class ZooInspectorAboutDialog extends JDialog {
     /**
      * @param frame
@@ -67,7 +69,7 @@ public class ZooInspectorAboutDialog extends JDialog {
 						Desktop.getDesktop().browse(event.getURL().toURI());
 					}
 					catch (IOException | URISyntaxException ex) {
-						LoggerFactory.getLogger().error("", ex);
+						log.error("", ex);
 					}
                 }
         });        
@@ -76,7 +78,7 @@ public class ZooInspectorAboutDialog extends JDialog {
             aboutPane.setPage(aboutURL);
         } 
         catch (IOException e) {
-            LoggerFactory.getLogger().error("Error loading about.html, file may be corrupt", e);
+            log.error("Error loading about.html, file may be corrupt", e);
         }
         panel.add(aboutPane, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(600, 300));

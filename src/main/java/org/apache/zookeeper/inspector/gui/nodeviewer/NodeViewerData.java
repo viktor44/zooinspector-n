@@ -32,12 +32,14 @@ import javax.swing.SwingWorker;
 
 import org.apache.zookeeper.inspector.ZooInspector;
 import org.apache.zookeeper.inspector.gui.IconResource;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorNodeManager;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A node viewer for displaying the data for the currently selected node
  */
+@Slf4j
 public class NodeViewerData extends ZooInspectorNodeViewer {
     private ZooInspectorNodeManager zooInspectorManager;
     private final JTextPane dataArea;
@@ -93,12 +95,10 @@ public class NodeViewerData extends ZooInspectorNodeViewer {
                         data = get();
                     } 
                     catch (InterruptedException e) {
-                        LoggerFactory.getLogger().error(
-                                "Error retrieving data for node: " + NodeViewerData.this.selectedNode, e);
+                        log.error("Error retrieving data for node: {}", NodeViewerData.this.selectedNode, e);
                     } 
                     catch (ExecutionException e) {
-                        LoggerFactory.getLogger().error(
-                                "Error retrieving data for node: " + NodeViewerData.this.selectedNode, e);
+                        log.error("Error retrieving data for node: {}", NodeViewerData.this.selectedNode, e);
                     }
                     NodeViewerData.this.dataArea.setText(data);
                 }

@@ -29,13 +29,15 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.client.ZKClientConfig;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZookeeperProperties;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A Class which extends {@link ZooKeeper} and will automatically retry calls to
  * zookeeper if a {@link KeeperException.ConnectionLossException} occurs
  */
+@Slf4j
 public class ZooKeeperRetry extends ZooKeeper {
 
     private boolean closed = false;
@@ -91,7 +93,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.create(path, data, acl, createMode);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
                 if (exists(path, false) != null) {
                     return path;
                 }
@@ -112,7 +114,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 super.delete(path, version);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
                 if (exists(path, false) == null) {
                     return;
                 }
@@ -132,7 +134,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.exists(path, watch ? watcher : null);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -147,7 +149,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.exists(path, watcher);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -155,15 +157,14 @@ public class ZooKeeperRetry extends ZooKeeper {
     }
 
     @Override
-    public List<ACL> getACL(String path, Stat stat) throws KeeperException,
-            InterruptedException {
+    public List<ACL> getACL(String path, Stat stat) throws KeeperException, InterruptedException {
         int count = 0;
         do {
             try {
                 return super.getACL(path, stat);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -179,7 +180,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.getChildren(path, watch ? watcher : null);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -195,7 +196,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.getChildren(path, watcher);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -211,7 +212,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.getData(path, watch ? watcher : null, stat);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -227,7 +228,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.getData(path, watcher, stat);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (!closed && (limit == -1 || count++ < limit));
@@ -243,7 +244,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.setACL(path, acl, aclVersion);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
                 Stat s = exists(path, false);
                 if (s != null) {
                     if (getACL(path, s).equals(acl)) {
@@ -268,7 +269,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.setData(path, data, version);
             } 
             catch (KeeperException.ConnectionLossException e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
                 Stat s = exists(path, false);
                 if (s != null) {
                     if (getData(path, false, s) == data) {
@@ -301,7 +302,7 @@ public class ZooKeeperRetry extends ZooKeeper {
                 return super.exists("/", null) != null;
             } 
             catch (Exception e) {
-                LoggerFactory.getLogger().warn("ZooKeeper connection lost. Trying to reconnect.");
+                log.warn("ZooKeeper connection lost. Trying to reconnect.");
             }
         } 
         while (count++ < 5);

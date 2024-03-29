@@ -29,12 +29,11 @@ import javax.swing.UIManager;
 
 import org.apache.zookeeper.inspector.gui.IconResource;
 import org.apache.zookeeper.inspector.gui.ZooInspectorPanel;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorManagerImpl;
 
-/**
- * 
- */
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ZooInspector {
 	
 	public static final String APP_NAME = "ZooInspector-N";
@@ -74,7 +73,7 @@ public class ZooInspector {
             JOptionPane.setRootFrame(frame);
         } 
         catch (Exception e) {
-            LoggerFactory.getLogger().error("Error occurred loading " + APP_NAME, e);
+            log.error("Error occurred loading " + APP_NAME, e);
             JOptionPane.showMessageDialog(
             		null,
             		APP_NAME + " failed to start: " + e.getMessage(), 

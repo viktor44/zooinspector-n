@@ -37,13 +37,15 @@ import javax.swing.SwingWorker;
 import org.apache.zookeeper.inspector.gui.actions.AddNodeAction;
 import org.apache.zookeeper.inspector.gui.actions.DeleteNodeAction;
 import org.apache.zookeeper.inspector.gui.nodeviewer.ZooInspectorNodeViewer;
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorManager;
 import org.apache.zookeeper.inspector.manager.ZookeeperProperties;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The parent {@link JPanel} for the whole application
  */
+@Slf4j
 public class ZooInspectorPanel extends JPanel implements
         NodeViewersChangeListener {
     private final IconResource iconResource;
@@ -73,7 +75,7 @@ public class ZooInspectorPanel extends JPanel implements
             }
         } 
         catch (Exception ex) {
-            LoggerFactory.getLogger().error("Error loading default node viewers.", ex);
+            log.error("Error loading default node viewers.", ex);
             JOptionPane.showMessageDialog(
             		ZooInspectorPanel.this,
                     "Error loading default node viewers: " + ex.getMessage(),
@@ -185,10 +187,7 @@ public class ZooInspectorPanel extends JPanel implements
                     }
                 } 
                 catch (InterruptedException | ExecutionException e) {
-                    LoggerFactory.getLogger().error(
-                            "Error occurred while connecting to ZooKeeper server",
-                            e
-                    );
+                    log.error("Error occurred while connecting to ZooKeeper server", e);
                 }
             }
 
@@ -225,9 +224,7 @@ public class ZooInspectorPanel extends JPanel implements
                     }
                 } 
                 catch (InterruptedException | ExecutionException e) {
-                    LoggerFactory.getLogger().error(
-                            "Error occurred while disconnecting from ZooKeeper server",
-                            e);
+                    log.error("Error occurred while disconnecting from ZooKeeper server", e);
                 } 
             }
 
@@ -239,9 +236,7 @@ public class ZooInspectorPanel extends JPanel implements
                     Thread.sleep(100);
                 } 
                 catch (InterruptedException e) {
-                    LoggerFactory.getLogger().error(
-                            "Error occurred while disconnecting from ZooKeeper server",
-                            e);
+                    log.error("Error occurred while disconnecting from ZooKeeper server", e);
                 }
             }
         }

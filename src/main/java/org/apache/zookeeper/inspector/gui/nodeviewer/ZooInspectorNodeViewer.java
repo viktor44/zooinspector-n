@@ -28,93 +28,59 @@ import javax.swing.JPanel;
 import org.apache.zookeeper.inspector.manager.ZooInspectorNodeManager;
 
 /**
- * A {@link JPanel} for displaying information about the currently selected
- * node(s)
+ * A {@link JPanel} for displaying information about the currently selected node(s)
  */
-public abstract class ZooInspectorNodeViewer extends JPanel implements
-        Transferable {
+public abstract class ZooInspectorNodeViewer extends JPanel implements Transferable {
     /**
-     * The {@link DataFlavor} used for DnD in the node viewer configuration
-     * dialog
+     * The {@link DataFlavor} used for DnD in the node viewer configuration dialog
      */
-    public static final DataFlavor nodeViewerDataFlavor = new DataFlavor(
-            ZooInspectorNodeViewer.class, "nodeviewer");
+    public static final DataFlavor nodeViewerDataFlavor = new DataFlavor(ZooInspectorNodeViewer.class, "nodeviewer");
 
     /**
      * @param zooInspectorManager
      */
-    public abstract void setZooInspectorManager(
-            ZooInspectorNodeManager zooInspectorManager);
+    public abstract void setZooInspectorManager(ZooInspectorNodeManager zooInspectorManager);
 
     /**
      * Called whenever the selected nodes in the tree view changes.
      * 
-     * @param selectedNodes
-     *            - the nodes currently selected in the tree view
-     * 
+     * @param selectedNodes - the nodes currently selected in the tree view
      */
     public abstract void nodeSelectionChanged(List<String> selectedNodes);
 
     /**
-     * @return the title of the node viewer. this will be shown on the tab for
-     *         this node viewer.
+     * @return the title of the node viewer. this will be shown on the tab for this node viewer.
      */
     public abstract String getTitle();
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * java.awt.datatransfer.Transferable#getTransferData(java.awt.datatransfer
-     * .DataFlavor)
-     */
-    public Object getTransferData(DataFlavor flavor)
-            throws UnsupportedFlavorException, IOException {
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor.equals(nodeViewerDataFlavor)) {
             return this.getClass().getCanonicalName();
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.awt.datatransfer.Transferable#getTransferDataFlavors()
-     */
+    @Override
     public DataFlavor[] getTransferDataFlavors() {
         return new DataFlavor[] { nodeViewerDataFlavor };
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @seejava.awt.datatransfer.Transferable#isDataFlavorSupported(java.awt.
-     * datatransfer.DataFlavor)
-     */
+    @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(nodeViewerDataFlavor);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((getTitle() == null) ? 0 : getTitle().hashCode());
+        result = prime * result + ((getTitle() == null) ? 0 : getTitle().hashCode());
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

@@ -34,12 +34,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import org.apache.zookeeper.inspector.logger.LoggerFactory;
 import org.apache.zookeeper.inspector.manager.ZooInspectorNodeManager;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A node viewer for displaying the ACLs currently applied to the selected node
  */
+@Slf4j
 public class NodeViewerACL extends ZooInspectorNodeViewer {
     private ZooInspectorNodeManager zooInspectorManager;
     private final JPanel aclDataPanel;
@@ -83,10 +85,8 @@ public class NodeViewerACL extends ZooInspectorNodeViewer {
             SwingWorker<List<Map<String, String>>, Void> worker = new SwingWorker<List<Map<String, String>>, Void>() {
 
                 @Override
-                protected List<Map<String, String>> doInBackground()
-                        throws Exception {
-                    return NodeViewerACL.this.zooInspectorManager
-                            .getACLs(NodeViewerACL.this.selectedNode);
+                protected List<Map<String, String>> doInBackground() throws Exception {
+                    return NodeViewerACL.this.zooInspectorManager.getACLs(NodeViewerACL.this.selectedNode);
                 }
 
                 @Override
@@ -94,16 +94,14 @@ public class NodeViewerACL extends ZooInspectorNodeViewer {
                     List<Map<String, String>> acls = null;
                     try {
                         acls = get();
-                    } catch (InterruptedException e) {
+                    } 
+                    catch (InterruptedException e) {
                         acls = new ArrayList<Map<String, String>>();
-                        LoggerFactory.getLogger().error(
-                                "Error retrieving ACL Information for node: "
-                                        + NodeViewerACL.this.selectedNode, e);
-                    } catch (ExecutionException e) {
+                        log.error("Error retrieving ACL Information for node: {}", NodeViewerACL.this.selectedNode, e);
+                    } 
+                    catch (ExecutionException e) {
                         acls = new ArrayList<Map<String, String>>();
-                        LoggerFactory.getLogger().error(
-                                "Error retrieving ACL Information for node: "
-                                        + NodeViewerACL.this.selectedNode, e);
+                        log.error("Error retrieving ACL Information for node: {}", NodeViewerACL.this.selectedNode, e);
                     }
                     aclDataPanel.setLayout(new GridBagLayout());
                     int j = 0;
