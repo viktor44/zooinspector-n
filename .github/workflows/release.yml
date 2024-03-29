@@ -20,15 +20,19 @@ jobs:
         with:
           p12-file-base64: ${{ secrets.MACOS_DEV_CERT }}
           p12-password: ${{ secrets.MACOS_DEV_CERT_PASSWORD }}
-      - run: |
+      - name: Build
+        run: |
           chmod 755 mvnw 
           ./mvnw clean package --batch-mode --no-transfer-progress      
-      - run: |
+      - name: Create executable
+        id: vars
+        run: |
           $JAVA_HOME/bin/jpackage @target/jpackage-macos.args --type dmg
+          echo "distr_name=$(cd target/distr/macos && ls *.dmg)" >> $GITHUB_OUTPUT
       - name: Notarize Release Build
         uses: lando/notarize-action@v2
         with:
-          product-path: target/distr/macos/ZooInspectorN-1.1.dmg
+          product-path: target/distr/macos/${{ steps.vars.outputs.distr_name }}
           appstore-connect-username: ${{ secrets.MACOS_NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
           appstore-connect-team-id: ${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}
@@ -49,7 +53,13 @@ jobs:
       - run: |
           ./mvnw clean package --batch-mode --no-transfer-progress      
       - run: |
-          %JAVA_HOME%\bin\jpackage.exe @target\jpackage-win.args --type exe
+          %JAVA_HOME%\bin\jpackage.exe @target\jpackage-win.args ^
+            --type exe ^
+            --win-per-user-install ^
+            --win-shortcut ^
+            --win-menu ^
+            --win-menu-group ZooInspector ^
+            --win-upgrade-uuid a68e451c-3cae-4e4a-bf2b-eedf7c501414
         shell: cmd
       - uses: softprops/action-gh-release@v2
         with:

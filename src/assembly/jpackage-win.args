@@ -5,4 +5,4 @@
 --vendor Viktor44
 --app-version ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}
 --main-jar ${project.build.finalName}.jar
-
+--java-options "-XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30"
